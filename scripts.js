@@ -136,6 +136,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     renderFeatured();
     renderReviews();
     renderFAQs();
+    initFilterChips();
     initQuoteForm();
     initContactForm();
     initPromoBanner();
@@ -241,8 +242,9 @@ function addToCart(productId, qty) {
   var product = App.products.find(function(p) { return p.id === productId || p.slug === productId; });
   if (!product) return;
   var existing = App.cart.find(function(i) { return i.id === product.id; });
+  var effectivePrice = product.promo_price || product.price;
   if (existing) { existing.qty += qty; }
-  else { App.cart.push(Object.assign({}, product, { qty: qty })); }
+  else { App.cart.push(Object.assign({}, product, { qty: qty, price: effectivePrice, original_price: product.price })); }
   saveCart(); updateCartUI();
   showToast(product.name + ' agregado al carrito', 'success');
 }
@@ -345,28 +347,87 @@ function scrollCarousel(dir) {
 }
 
 // ================= RENDER SERVICES =================
+var Filters = { cat: '', minPrice: 0, maxPrice: 0, promoOnly: false };
+
+function initFilterChips() {
+  document.querySelectorAll('.filter-chips .chip').forEach(function(chip) {
+    chip.addEventListener('click', function() {
+      document.querySelectorAll('.filter-chips .chip').forEach(function(c){ c.classList.remove('active'); });
+      this.classList.add('active');
+      Filters.cat = this.dataset.cat;
+      applyFilters();
+    });
+  });
+}
+
+function applyFilters() {
+  var minEl   = document.getElementById('filterMinPrice');
+  var maxEl   = document.getElementById('filterMaxPrice');
+  var promoEl = document.getElementById('filterPromo');
+  Filters.minPrice  = minEl   ? (parseInt(minEl.value)   || 0)     : 0;
+  Filters.maxPrice  = maxEl   ? (parseInt(maxEl.value)   || 0)     : 0;
+  Filters.promoOnly = promoEl ? promoEl.checked : false;
+  renderServices();
+}
+
+function resetFilters() {
+  Filters = { cat: '', minPrice: 0, maxPrice: 0, promoOnly: false };
+  var minEl   = document.getElementById('filterMinPrice');
+  var maxEl   = document.getElementById('filterMaxPrice');
+  var promoEl = document.getElementById('filterPromo');
+  if (minEl)   minEl.value    = '';
+  if (maxEl)   maxEl.value    = '';
+  if (promoEl) promoEl.checked = false;
+  document.querySelectorAll('.filter-chips .chip').forEach(function(c){ c.classList.remove('active'); });
+  var allChip = document.querySelector('.filter-chips .chip[data-cat=""]');
+  if (allChip) allChip.classList.add('active');
+  renderServices();
+}
+
 function renderServices() {
   var grid = document.getElementById('servicesGrid');
   if (!grid) return;
+
+  var filtered = App.products.filter(function(p) {
+    if (Filters.cat && p.category !== Filters.cat) return false;
+    var effectivePrice = p.promo_price || p.price;
+    if (Filters.minPrice > 0 && effectivePrice < Filters.minPrice) return false;
+    if (Filters.maxPrice > 0 && effectivePrice > Filters.maxPrice) return false;
+    if (Filters.promoOnly && !p.promo_price) return false;
+    return true;
+  });
+
   var html = '<div class="service-card quote-card" onclick="showSection(\'cotizar\')">'
     + '<div class="service-card-header"><div class="service-card-icon" style="background:rgba(255,255,255,0.15);color:white;"><i class="fa-solid fa-wand-magic-sparkles"></i></div><h3>Proyecto Personalizado</h3></div>'
     + '<div class="service-card-body"><p>¿Necesitas algo único? Cuéntanos tu idea y te enviamos una cotización a tu medida.</p>'
     + '<div class="service-features"><span>Desarrollo a medida</span><span>Consultoría técnica</span><span>Presupuesto flexible</span></div></div>'
     + '<div class="service-card-footer"><div class="service-price"><span class="from">Desde</span> Cotización</div>'
     + '<button class="btn btn-outline-white btn-sm">Cotizar Ahora</button></div></div>';
-  App.products.forEach(function(p) { html += buildServiceCard(p); });
+
+  if (filtered.length === 0) {
+    html += '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#999;">'
+      + '<i class="fa-solid fa-filter" style="font-size:2rem;margin-bottom:10px;display:block;"></i>'
+      + '<p>No hay servicios con esos filtros. <button onclick="resetFilters()" style="background:none;border:none;color:var(--azul-claro);cursor:pointer;text-decoration:underline;">Limpiar filtros</button></p></div>';
+  } else {
+    filtered.forEach(function(p) { html += buildServiceCard(p); });
+  }
   grid.innerHTML = html;
 }
 
 function buildServiceCard(p) {
   var cls = { web:'purple', ecommerce:'salmon', app:'green' }[p.category] || 'blue';
   var feats = parseFeatures(p.features);
+  var priceHtml = p.promo_price
+    ? '<span class="from">Promo</span> <span class="price-promo">' + formatPrice(p.promo_price) + '</span> <span class="price-original">' + formatPrice(p.price) + '</span>'
+    : '<span class="from">Desde</span> ' + formatPrice(p.price);
   return '<div class="service-card" onclick="showServiceDetail(\'' + p.slug + '\')">'
-    + '<div class="service-card-header"><div class="service-card-icon ' + cls + '"><i class="' + (p.image||'fa-solid fa-code') + '"></i></div><h3>' + p.name + '</h3></div>'
+    + '<div class="service-card-header"><div class="service-card-icon ' + cls + '"><i class="' + (p.image||'fa-solid fa-code') + '"></i></div>'
+    + (p.promo_price ? '<span class="promo-badge">PROMO</span>' : '')
+    + '<h3>' + p.name + '</h3></div>'
     + '<div class="service-card-body"><p>' + p.description + '</p><div class="service-features">'
     + feats.slice(0,3).map(function(f){ return '<span>'+f+'</span>'; }).join('')
     + '</div></div><div class="service-card-footer">'
-    + '<div class="service-price"><span class="from">Desde</span> ' + formatPrice(p.price) + ' <span class="note">Sin hosting ni dominio</span></div>'
+    + '<div class="service-price">' + priceHtml + ' <span class="note">Sin hosting ni dominio</span></div>'
     + '<button class="btn btn-azul btn-sm" onclick="event.stopPropagation();addToCart(\'' + p.id + '\')"><i class="fa-solid fa-cart-plus"></i> Agregar</button>'
     + '</div></div>';
 }
@@ -378,10 +439,14 @@ function renderFeatured() {
 }
 
 function buildFeaturedCard(p) {
+  var priceHtml = p.promo_price
+    ? '<span class="price-promo">' + formatPrice(p.promo_price) + '</span> <span class="price-original">' + formatPrice(p.price) + '</span>'
+    : '<span class="from">Desde</span> ' + formatPrice(p.price);
   return '<div class="featured-card" onclick="showServiceDetail(\'' + p.slug + '\')">'
-    + '<div class="featured-img"><i class="' + (p.image||'fa-solid fa-code') + '"></i></div>'
+    + (p.promo_price ? '<span class="promo-badge" style="position:absolute;top:10px;right:10px;">PROMO</span>' : '')
+    + '<div class="featured-img" style="position:relative;"><i class="' + (p.image||'fa-solid fa-code') + '"></i></div>'
     + '<div class="featured-info"><h4>' + p.name + '</h4>'
-    + '<p class="price"><span class="from">Desde</span> ' + formatPrice(p.price) + '</p>'
+    + '<p class="price">' + priceHtml + '</p>'
     + '<button class="add-to-cart" onclick="event.stopPropagation();addToCart(\'' + p.id + '\')"><i class="fa-solid fa-cart-plus"></i> Agregar</button>'
     + '</div></div>';
 }
@@ -404,13 +469,18 @@ function renderServiceDetail() {
   if (!container || !p) return;
   var feats = parseFeatures(p.features);
   var catName = { web:'Desarrollo Web', ecommerce:'E-Commerce', app:'Aplicación Web' }[p.category] || p.category;
+  var priceHtml = p.promo_price
+    ? '<span class="price-promo" style="font-size:2rem;font-weight:800;color:var(--salmon);">' + formatPrice(p.promo_price) + '</span>'
+      + ' <span class="price-original" style="font-size:1.2rem;color:#aaa;text-decoration:line-through;margin-left:8px;">' + formatPrice(p.price) + '</span>'
+      + ' <span class="promo-badge" style="margin-left:8px;">PROMO</span>'
+    : '<span class="from">Desde</span> <strong style="font-size:2rem;">' + formatPrice(p.price) + '</strong>';
 
   container.innerHTML = '<div class="service-detail">'
     + '<div class="detail-icon"><i class="' + (p.image||'fa-solid fa-code') + '"></i></div>'
     + '<div class="detail-info">'
     + '<span class="detail-category">' + catName + '</span>'
     + '<h1>' + p.name + '</h1>'
-    + '<div class="price"><span class="from">Desde</span> ' + formatPrice(p.price) + ' <span class="note">No incluye hosting ni dominio</span></div>'
+    + '<div class="price" style="margin:15px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' + priceHtml + ' <span class="note" style="font-size:0.8rem;color:#999;">No incluye hosting ni dominio</span></div>'
     + '<p class="desc">' + p.description + '</p>'
     + '<div class="features-list"><h4><i class="fa-solid fa-list-check"></i> ¿Qué incluye?</h4><ul>'
     + feats.map(function(f){ return '<li><i class="fa-solid fa-check"></i> '+f+'</li>'; }).join('')
@@ -429,6 +499,7 @@ function renderServiceDetail() {
     + '</div>'
     + '<button class="scroll-btn right" onclick="document.getElementById(\'carouselSimilar\').scrollBy({left:320,behavior:\'smooth\'})"><i class="fa-solid fa-chevron-right"></i></button>'
     + '</div></section>';
+}
 }
 
 // ================= REVIEWS =================
@@ -657,7 +728,8 @@ async function processSuccessfulPayment(details) {
       items:            App.cart.map(function(i){ return { id:i.id, name:i.name, qty:i.qty, price:i.price }; }),
       total:            App.checkoutTotal,
       payment_method:   'PayPal Sandbox',
-      paypal_reference: details.id || 'sim'
+      paypal_reference: details.id || 'sim',
+      promo_code:       App.appliedCode || null
     }
   });
 
@@ -734,7 +806,9 @@ async function renderProfile() {
       ordersList.innerHTML = '<p style="text-align:center;color:#999;padding:30px;">No tienes pedidos aún.</p>';
     } else {
       ordersList.innerHTML = ordersRes.orders.map(function(o) {
-        return '<div class="order-row"><div><h4>#' + o.order_number + '</h4><p>' + formatDate(o.created_at) + ' · ' + statusLabel(o.status) + '</p></div><span class="order-total">' + formatPrice(o.total) + '</span></div>';
+        var cancelNote = (o.status === 'cancelled' && o.cancel_reason)
+          ? '<div class="cancel-reason-box"><i class="fa-solid fa-ban"></i> Cancelado: ' + o.cancel_reason + '</div>' : '';
+        return '<div class="order-row"><div><h4>#' + o.order_number + '</h4><p>' + formatDate(o.created_at) + ' · ' + statusLabel(o.status) + '</p>' + cancelNote + '</div><span class="order-total">' + formatPrice(o.total) + '</span></div>';
       }).join('');
       var hasBought = ordersRes.orders.some(function(o) { return o.payment_status === 'paid'; });
       var reviewSec = g('reviewSection');
@@ -808,16 +882,40 @@ async function submitNewPassword(e) {
   var cp = document.getElementById('confirmPassword');
   var op = document.getElementById('oldPassword');
   if (!np || !cp) return;
+  if (!op || !op.value) { showToast('Ingresa tu contraseña actual', 'error'); return; }
   if (np.value !== cp.value) { showToast('Las contraseñas no coinciden', 'error'); return; }
-  if (np.value.length < 6)   { showToast('Mínimo 6 caracteres', 'error'); return; }
+  if (np.value.length < 6)  { showToast('Mínimo 6 caracteres', 'error'); return; }
   var res = await api('auth?action=profile', {
     method: 'PATCH',
-    body: { password: op ? op.value : '', new_password: np.value }
+    body: { password: op.value, new_password: np.value }
   });
   if (res.error) { showToast('Error: ' + res.error, 'error'); return; }
   showToast('¡Contraseña actualizada!', 'success');
   closeChangePwdModal();
-  np.value = ''; cp.value = ''; if (op) op.value = '';
+  np.value = ''; cp.value = ''; op.value = '';
+}
+
+// ================= DELETE ACCOUNT =================
+function openDeleteAccountModal() {
+  var m = document.getElementById('deleteAccountModal');
+  if (m) m.style.display = 'flex';
+}
+function closeDeleteAccountModal() {
+  var m = document.getElementById('deleteAccountModal');
+  if (m) m.style.display = 'none';
+  var p = document.getElementById('deleteAccountPassword');
+  var c = document.getElementById('deleteAccountConfirm');
+  if (p) p.value = ''; if (c) c.value = '';
+}
+async function confirmarEliminarCuenta() {
+  var pwd  = document.getElementById('deleteAccountPassword');
+  var conf = document.getElementById('deleteAccountConfirm');
+  if (!pwd || !pwd.value)  { showToast('Ingresa tu contraseña', 'error'); return; }
+  if (!conf || conf.value !== 'ELIMINAR') { showToast('Escribe ELIMINAR para confirmar', 'error'); return; }
+  var res = await api('auth?action=delete-account', { method: 'POST', body: { password: pwd.value } });
+  if (res.error) { showToast('Error: ' + res.error, 'error'); return; }
+  showToast('Cuenta eliminada. Hasta luego.', 'info');
+  setTimeout(function() { window.location.href = '/'; }, 1500);
 }
 
 // ================= HELPERS =================

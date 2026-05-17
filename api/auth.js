@@ -179,5 +179,27 @@ export default async function handler(req, res) {
     return json(res, { ok: true });
   }
 
+  // ── POST /api/auth?action=delete-account ─────────────────
+  if (action === 'delete-account' && method === 'POST') {
+    const session = await getSessionUser(req);
+    if (!session) return err(res, 'No autenticado', 401);
+    const { password } = req.body || {};
+    if (!password) return err(res, 'Falta la contraseña');
+    const db = sql();
+    const rows = await db`SELECT password_hash FROM users WHERE id = ${session.id} LIMIT 1`;
+    const user = rows[0];
+    if (!user) return err(res, 'Usuario no encontrado', 404);
+    if (user.password_hash) {
+      const valid = await bcrypt.compare(password, user.password_hash);
+      if (!valid) return err(res, 'Contraseña incorrecta');
+    }
+    await db`DELETE FROM orders  WHERE user_id = ${session.id}`;
+    await db`DELETE FROM quotes  WHERE user_id = ${session.id}`;
+    await db`DELETE FROM reviews WHERE user_id = ${session.id}`;
+    await db`DELETE FROM users   WHERE id      = ${session.id}`;
+    clearSessionCookie(res);
+    return json(res, { ok: true });
+  }
+
   err(res, 'Acción no encontrada', 404);
 }

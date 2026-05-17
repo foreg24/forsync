@@ -256,42 +256,55 @@ function renderOrders() {
   var container = document.getElementById('ordersContainer');
   if (!container) return;
   var orders = AdminApp.data.orders;
-
-  var pend  = orders.filter(function(o){ return o.status==='pending'; }).length;
-  var prog  = orders.filter(function(o){ return o.status==='in_progress'; }).length;
-  var ent   = orders.filter(function(o){ return o.status==='delivered'; }).length;
-  setText('pedPendientes', pend);
-  setText('pedProgreso',   prog);
-  setText('pedEntregados', ent);
-
+  var pend = orders.filter(function(o){ return o.status==='pending'; }).length;
+  var prog = orders.filter(function(o){ return o.status==='in_progress'; }).length;
+  var ent  = orders.filter(function(o){ return o.status==='delivered'; }).length;
+  setText('pedPendientes', pend); setText('pedProgreso', prog); setText('pedEntregados', ent);
   if (!orders.length) { container.innerHTML = '<div style="text-align:center;padding:40px;color:#999;"><i class="fa-solid fa-box-open" style="font-size:3rem;margin-bottom:15px;display:block;"></i>No hay pedidos aún.</div>'; return; }
-
+  var nextBtns = {
+    pending:     [{s:'confirmed',label:'<i class="fa-solid fa-check"></i> Confirmar',cls:'btn-verde'},{s:'cancelled',label:'<i class="fa-solid fa-xmark"></i> Cancelar',cls:'btn-rojo',ask:true}],
+    confirmed:   [{s:'in_progress',label:'<i class="fa-solid fa-code"></i> En Desarrollo',cls:'btn-azul'}],
+    in_progress: [{s:'delivered',label:'<i class="fa-solid fa-box"></i> Entregado',cls:'btn-verde'}],
+    delivered:   [], cancelled: []
+  };
   container.innerHTML = orders.map(function(o) {
     var items = typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []);
-    var itemsList = items.map(function(i){ return i.name+(i.qty>1?' x'+i.qty:''); }).join(', ');
+    var itemsList = items.map(function(i){ return escHtml(i.name)+(i.qty>1?' x'+i.qty:''); }).join(', ');
+    var btns = (nextBtns[o.status]||[]).map(function(b){
+      if (b.ask) return '<button class="btn btn-sm '+b.cls+'" onclick="promptCancelOrder(\''+o.id+'\')">'+b.label+'</button>';
+      return '<button class="btn btn-sm '+b.cls+'" onclick="updateOrderStatus(\''+o.id+'\',\''+b.s+'\')">'+b.label+'</button>';
+    }).join('');
+    var cancelNote = (o.status==='cancelled' && o.cancel_reason)
+      ? '<p style="font-size:0.82rem;color:#EF4444;background:#FEF2F2;padding:8px 12px;border-radius:8px;margin-top:8px;"><i class="fa-solid fa-ban"></i> Motivo: '+escHtml(o.cancel_reason)+'</p>' : '';
+    var isFinal = (o.status==='delivered'||o.status==='cancelled');
     return '<div class="venta-card '+o.status+'">'
-      + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'
-      + '<h3><i class="fa-solid fa-box"></i> #'+o.order_number+'</h3>'
-      + '<span class="badge '+statusBadgeClass(o.status)+'">'+statusLabel(o.status)+'</span>'
-      + '</div>'
-      + '<p style="font-size:0.9rem;color:#666;margin-bottom:5px;"><i class="fa-solid fa-user"></i> '+o.customer_name+' &lt;'+o.customer_email+'&gt;</p>'
-      + '<p style="font-size:0.85rem;color:#888;margin-bottom:15px;">'+itemsList+'</p>'
-      + '<div class="venta-meta"><span>'+formatDateFull(o.created_at)+'</span><span class="monto">'+formatPrice(o.total)+'</span></div>'
-      + '<div class="venta-actions">'
-      + statusOptions(['pending','confirmed','in_progress','delivered','cancelled'], o.status).map(function(s) {
-          return '<button class="btn btn-sm '+statusBtnClass(s)+'" onclick="updateOrderStatus(\''+o.id+'\',\''+s+'\')">'+statusLabel(s)+'</button>';
-        }).join('')
-      + '</div></div>';
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'
+      +'<h3><i class="fa-solid fa-box"></i> #'+escHtml(o.order_number)+'</h3>'
+      +'<span class="badge '+statusBadgeClass(o.status)+'">'+statusLabel(o.status)+'</span>'
+      +'</div>'
+      +'<p style="font-size:0.9rem;color:#666;margin-bottom:5px;"><i class="fa-solid fa-user"></i> '+escHtml(o.customer_name)+' &lt;'+escHtml(o.customer_email)+'&gt;</p>'
+      +'<p style="font-size:0.85rem;color:#888;margin-bottom:8px;">'+itemsList+'</p>'
+      +cancelNote
+      +'<div class="venta-meta"><span>'+formatDateFull(o.created_at)+'</span><span class="monto">'+formatPrice(o.total)+'</span></div>'
+      +(btns ? '<div class="venta-actions">'+btns+'</div>' : (isFinal?'<p style="font-size:0.8rem;color:#aaa;margin-top:8px;"><i class="fa-solid fa-lock"></i> Estado final</p>':''))
+      +'</div>';
   }).join('');
 }
 
-async function updateOrderStatus(id, status) {
-  var res = await api('orders', { method: 'PATCH', body: { id, status } });
+function promptCancelOrder(id) {
+  var reason = window.prompt('Motivo de cancelación (el cliente lo verá):');
+  if (reason === null) return;
+  if (!reason.trim()) { showAdminToast('El motivo no puede estar vacío', 'error'); return; }
+  updateOrderStatus(id, 'cancelled', reason.trim());
+}
+
+async function updateOrderStatus(id, status, cancelReason) {
+  var body = { id: id, status: status };
+  if (cancelReason) body.cancel_reason = cancelReason;
+  var res = await api('orders', { method: 'PATCH', body: body });
   if (res.error) { showAdminToast('Error: '+res.error, 'error'); return; }
-  showAdminToast('Estado actualizado a: '+statusLabel(status), 'success');
-  await loadAllData();
-  renderOrders();
-  renderDashboard();
+  showAdminToast('Estado actualizado: '+statusLabel(status), 'success');
+  await loadAllData(); renderOrders(); renderDashboard();
 }
 
 // ================= QUOTES =================
@@ -459,6 +472,7 @@ function renderPromos() {
       + '<td>'+usos+'</td>'
       + '<td>'+estado+'</td>'
       + '<td><div class="table-actions">'
+      + '<button class="btn-edit" onclick="openEditPromo('+JSON.stringify(p)+')" style="background:#F59E0B;"><i class="fa-solid fa-pen"></i> Editar</button>'
       + '<button class="btn-hide" onclick="togglePromoStatus(\''+p.id+'\','+p.is_active+')"><i class="fa-solid fa-toggle-'+(p.is_active?'on':'off')+'"></i> '+(p.is_active?'Desactivar':'Activar')+'</button>'
       + '<button class="btn-delete" onclick="deletePromo(\''+p.id+'\')"><i class="fa-solid fa-trash"></i></button>'
       + '</div></td></tr>';
@@ -645,4 +659,47 @@ function showAdminToast(msg, type) {
     t.style.transition = 'all 0.3s ease'; t.style.opacity = '0'; t.style.transform = 'translateX(100%)';
     setTimeout(function(){ t.remove(); }, 300);
   }, 4000);
+}
+
+// ================= EDITAR PROMO =================
+function openEditPromo(p) {
+  document.getElementById('editPromoId').value          = p.id;
+  document.getElementById('editPromoTitle').value       = p.title || '';
+  document.getElementById('editPromoDesc').value        = p.description || '';
+  document.getElementById('editPromoType').value        = p.discount_type || 'percentage';
+  document.getElementById('editPromoValue').value       = p.discount_value || '';
+  document.getElementById('editPromoCode').value        = p.code || '';
+  document.getElementById('editPromoLimit').value       = p.usage_limit || '';
+  document.getElementById('editPromoStart').value       = p.start_date ? p.start_date.slice(0,10) : '';
+  document.getElementById('editPromoEnd').value         = p.end_date   ? p.end_date.slice(0,10)   : '';
+  document.getElementById('editPromoModal').style.display = 'flex';
+}
+
+function closeEditPromo() {
+  document.getElementById('editPromoModal').style.display = 'none';
+}
+
+async function saveEditPromo(e) {
+  if (e) e.preventDefault();
+  var id = document.getElementById('editPromoId').value;
+  var res = await api('promotions', {
+    method: 'PATCH',
+    body: {
+      id,
+      title:          document.getElementById('editPromoTitle').value,
+      description:    document.getElementById('editPromoDesc').value  || null,
+      discount_type:  document.getElementById('editPromoType').value,
+      discount_value: parseInt(document.getElementById('editPromoValue').value),
+      code:           document.getElementById('editPromoCode').value,
+      usage_limit:    parseInt(document.getElementById('editPromoLimit').value) || null,
+      start_date:     document.getElementById('editPromoStart').value || null,
+      end_date:       document.getElementById('editPromoEnd').value   || null
+    }
+  });
+  if (res.error) { showAdminToast('Error: '+res.error, 'error'); return; }
+  showAdminToast('Promoción actualizada', 'success');
+  closeEditPromo();
+  var pm = await api('promotions');
+  AdminApp.data.promos = pm.promotions || [];
+  renderPromos();
 }

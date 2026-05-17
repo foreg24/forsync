@@ -7,90 +7,242 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .login-tabs{display:flex;border-bottom:2px solid #f0f0f0;margin-bottom:25px;}
-        .login-tab{flex:1;padding:12px;border:none;background:none;font-size:0.95rem;font-weight:600;color:var(--texto-gris);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.3s;font-family:'Inter',sans-serif;margin-bottom:-2px;}
-        .login-tab.active{color:var(--salmon);border-bottom-color:var(--salmon);}
-        .tab-panel{display:none;}
-        .tab-panel.active{display:block;animation:fadeIn 0.3s ease;}
-        .reset-link{background:none;border:none;color:var(--azul-claro);cursor:pointer;font-size:0.85rem;text-decoration:underline;padding:0;font-family:'Inter',sans-serif;}
-        .confirm-box{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:25px;text-align:center;margin-top:15px;}
-        .confirm-box i{font-size:2.5rem;color:#10B981;margin-bottom:12px;display:block;}
-        .confirm-box h3{color:var(--azul-oscuro);margin-bottom:8px;}
-        .confirm-box p{color:var(--texto-gris);font-size:0.9rem;line-height:1.6;}
+        body { background: var(--bg); }
+        .login-page {
+            min-height: 100vh; display: flex; align-items: stretch;
+        }
+        /* Left panel */
+        .login-left {
+            flex: 1; background: linear-gradient(135deg, #0D0F14 0%, #1a1f30 100%);
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 60px; position: relative; overflow: hidden;
+        }
+        .login-left::before {
+            content: ''; position: absolute; top: -100px; left: -100px;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .login-left::after {
+            content: ''; position: absolute; bottom: -80px; right: -80px;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .login-brand { position: relative; z-index: 1; margin-bottom: 60px; }
+        .login-brand .logo-text {
+            font-family: 'Outfit', sans-serif; font-size: 2.2rem;
+            font-weight: 800; color: #F1F5F9; display: flex; align-items: center; gap: 10px;
+        }
+        .login-brand .logo-text i { color: var(--salmon); }
+        .login-brand p { color: #64748B; font-size: 0.9rem; margin-top: 6px; }
+        .login-features { position: relative; z-index: 1; }
+        .login-feature {
+            display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px;
+        }
+        .login-feature .feat-icon {
+            width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+        }
+        .login-feature .feat-icon.s { background: rgba(249,115,22,0.15); color: var(--salmon); }
+        .login-feature .feat-icon.b { background: rgba(59,130,246,0.15);  color: #3B82F6;      }
+        .login-feature .feat-icon.g { background: rgba(16,185,129,0.15);  color: #10B981;      }
+        .login-feature h4 { color: #F1F5F9; font-size: 0.95rem; margin-bottom: 3px; }
+        .login-feature p  { color: #64748B; font-size: 0.82rem; line-height: 1.5; }
+
+        /* Right panel */
+        .login-right {
+            width: 480px; background: #161921; display: flex;
+            flex-direction: column; justify-content: center;
+            padding: 50px 48px; border-left: 1px solid rgba(255,255,255,0.07);
+        }
+        .login-right h2 {
+            font-family: 'Outfit', sans-serif; font-size: 1.9rem;
+            color: #F1F5F9; margin-bottom: 8px; font-weight: 700;
+        }
+        .login-right .subtitle { color: #64748B; font-size: 0.9rem; margin-bottom: 30px; }
+
+        /* Tabs */
+        .login-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 28px; }
+        .login-tab {
+            flex: 1; padding: 11px; border: none; background: none;
+            font-size: 0.9rem; font-weight: 600; color: #64748B; cursor: pointer;
+            border-bottom: 2px solid transparent; transition: all 0.3s; font-family: 'Inter', sans-serif;
+            margin-bottom: -1px;
+        }
+        .login-tab.active { color: var(--salmon); border-bottom-color: var(--salmon); }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeInUp 0.3s ease; }
+        @keyframes fadeInUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+        /* Inputs */
+        .input-field {
+            width: 100%; padding: 13px 16px; margin-bottom: 14px;
+            background: #1C2030; border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px; font-size: 0.92rem; color: #F1F5F9;
+            font-family: 'Inter', sans-serif; transition: 0.3s;
+        }
+        .input-field::placeholder { color: #475569; }
+        .input-field:focus { outline: none; border-color: var(--salmon); box-shadow: 0 0 0 3px rgba(249,115,22,0.12); }
+
+        .divider {
+            display: flex; align-items: center; margin: 20px 0; color: #475569; font-size: 0.85rem;
+        }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.07); }
+        .divider::before { margin-right: 14px; }
+        .divider::after  { margin-left:  14px; }
+
+        .btn-full { width: 100%; justify-content: center; }
+        .btn-google-dark {
+            width: 100%; padding: 13px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);
+            background: #1C2030; color: #F1F5F9; font-weight: 600; cursor: pointer;
+            font-family: 'Inter', sans-serif; font-size: 0.92rem; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 6px;
+        }
+        .btn-google-dark:hover { background: #232840; border-color: rgba(255,255,255,0.2); }
+        .btn-google-dark img { width: 18px; height: 18px; }
+        .btn-salmon-full {
+            width: 100%; padding: 13px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #F97316, #EA580C);
+            color: white; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+            font-size: 0.92rem; transition: 0.3s; display: flex; align-items: center;
+            justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(249,115,22,0.3);
+        }
+        .btn-salmon-full:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .btn-azul-full {
+            width: 100%; padding: 13px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
+            color: white; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif;
+            font-size: 0.92rem; transition: 0.3s; display: flex; align-items: center;
+            justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(59,130,246,0.3);
+        }
+        .btn-azul-full:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+        .reset-link {
+            background: none; border: none; color: #3B82F6; cursor: pointer;
+            font-size: 0.83rem; text-decoration: underline; padding: 0; font-family: 'Inter', sans-serif;
+        }
+        .reset-link:hover { color: var(--salmon); }
+
+        .confirm-box {
+            background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);
+            border-radius: 12px; padding: 24px; text-align: center; margin-top: 14px;
+        }
+        .confirm-box i { font-size: 2.2rem; color: #10B981; margin-bottom: 10px; display: block; }
+        .confirm-box h3 { color: #F1F5F9; margin-bottom: 8px; font-size: 1.05rem; }
+        .confirm-box p  { color: #64748B; font-size: 0.85rem; line-height: 1.6; }
+        .confirm-btn {
+            display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+            padding: 10px 22px; border-radius: 50px; border: none;
+            background: linear-gradient(135deg, #F97316, #EA580C);
+            color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem;
+            font-family: 'Inter', sans-serif; transition: 0.3s;
+        }
+        .confirm-btn:hover { filter: brightness(1.1); }
+
+        @media (max-width: 900px) {
+            .login-left { display: none; }
+            .login-right { width: 100%; padding: 40px 30px; border-left: none; }
+        }
+        @media (max-width: 480px) {
+            .login-right { padding: 30px 22px; }
+        }
     </style>
 </head>
-<body>
+<body style="padding-top:0;">
     <div class="page-loader" id="pageLoader">
         <div class="loader-logo"><i class="fa-solid fa-code"></i> ForSync</div>
         <div class="loader-spinner"></div>
         <p>Cargando...</p>
     </div>
 
-    <nav class="navbar">
-        <a href="index.html" class="logo"><i class="fa-solid fa-code"></i> ForSync</a>
-    </nav>
+    <div class="login-page">
+        <!-- LEFT PANEL -->
+        <div class="login-left">
+            <div class="login-brand">
+                <div class="logo-text"><i class="fa-solid fa-code"></i> ForSync</div>
+                <p>Desarrollo de software profesional</p>
+            </div>
+            <div class="login-features">
+                <div class="login-feature">
+                    <div class="feat-icon s"><i class="fa-solid fa-rocket"></i></div>
+                    <div>
+                        <h4>Proyectos a tu medida</h4>
+                        <p>Landing pages, tiendas virtuales, sistemas y aplicaciones web con entregas ágiles.</p>
+                    </div>
+                </div>
+                <div class="login-feature">
+                    <div class="feat-icon b"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div>
+                        <h4>Pagos seguros</h4>
+                        <p>Gestiona tus pedidos y cotizaciones con total transparencia desde tu perfil.</p>
+                    </div>
+                </div>
+                <div class="login-feature">
+                    <div class="feat-icon g"><i class="fa-solid fa-headset"></i></div>
+                    <div>
+                        <h4>Soporte dedicado</h4>
+                        <p>Comunicación directa, actualizaciones en tiempo real y 30 días de garantía.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <div class="login-container">
-        <div class="login-card">
+        <!-- RIGHT PANEL -->
+        <div class="login-right">
+            <a href="index.html" style="color:#64748B;font-size:0.85rem;display:inline-flex;align-items:center;gap:6px;margin-bottom:32px;transition:color 0.2s;">
+                <i class="fa-solid fa-arrow-left"></i> Volver al inicio
+            </a>
+
             <div class="login-tabs">
                 <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">
-                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                    <i class="fa-solid fa-right-to-bracket"></i> Ingresar
                 </button>
                 <button class="login-tab" id="tabRegister" onclick="switchTab('register')">
-                    <i class="fa-solid fa-user-plus"></i> Crear Cuenta
+                    <i class="fa-solid fa-user-plus"></i> Registrarse
                 </button>
             </div>
 
             <!-- LOGIN -->
             <div class="tab-panel active" id="panel-login">
-                <button class="btn btn-google" onclick="iniciarGoogleOAuth()" style="width:100%;">
-                    <i class="fa-brands fa-google"></i> Continuar con Google
+                <button class="btn-google-dark" onclick="iniciarGoogleOAuth()">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.8 6C12.4 13.2 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.5-4.1 7.1-10.2 7.1-17.1z"/><path fill="#FBBC05" d="M10.4 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.9-4.6l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.8.9 7.5 2.6 10.7l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.4-5.7l-7.6-5.9c-2.1 1.4-4.8 2.2-7.8 2.2-6.2 0-11.5-3.7-13.6-9.1l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                    Continuar con Google
                 </button>
-                <div class="divider">o con correo</div>
+                <div class="divider">o con correo electrónico</div>
                 <form id="loginForm" onsubmit="procesarLogin(event)">
-                    <div class="form-group">
-                        <input type="email" id="email" placeholder="Correo electrónico" required autocomplete="email">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="password" placeholder="Contraseña" required autocomplete="current-password">
-                    </div>
-                    <button type="submit" class="btn btn-salmon" style="width:100%;margin-top:5px;">
+                    <input class="input-field" type="email"    id="email"    placeholder="Correo electrónico" required autocomplete="email">
+                    <input class="input-field" type="password" id="password" placeholder="Contraseña"         required autocomplete="current-password">
+                    <button type="submit" class="btn-salmon-full" style="margin-top:4px;">
                         <i class="fa-solid fa-arrow-right"></i> Ingresar
                     </button>
                 </form>
-                <div style="text-align:center;margin-top:15px;">
+                <div style="text-align:center;margin-top:16px;">
                     <button class="reset-link" onclick="switchTab('forgot')">¿Olvidaste tu contraseña?</button>
                 </div>
             </div>
 
             <!-- REGISTRO -->
             <div class="tab-panel" id="panel-register">
-                <button class="btn btn-google" onclick="iniciarGoogleOAuth()" style="width:100%;">
-                    <i class="fa-brands fa-google"></i> Registrarse con Google
+                <button class="btn-google-dark" onclick="iniciarGoogleOAuth()">
+                    <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.8 2.5 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.8 6C12.4 13.2 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.5-4.1 7.1-10.2 7.1-17.1z"/><path fill="#FBBC05" d="M10.4 28.6A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.9-4.6l-7.8-6A23.9 23.9 0 0 0 0 24c0 3.8.9 7.5 2.6 10.7l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.3 0 11.6-2.1 15.4-5.7l-7.6-5.9c-2.1 1.4-4.8 2.2-7.8 2.2-6.2 0-11.5-3.7-13.6-9.1l-7.8 6.1C6.6 42.6 14.6 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+                    Registrarse con Google
                 </button>
                 <div class="divider">o crea tu cuenta</div>
                 <form id="registerForm" onsubmit="procesarRegistro(event)">
-                    <div class="form-group">
-                        <input type="text" id="regName" placeholder="Nombre completo" required autocomplete="name">
-                    </div>
-                    <div class="form-group">
-                        <input type="email" id="regEmail" placeholder="Correo electrónico" required autocomplete="email">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="regPassword" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="regPassword2" placeholder="Confirmar contraseña" required minlength="6">
-                    </div>
-                    <button type="submit" class="btn btn-azul" style="width:100%;margin-top:5px;">
+                    <input class="input-field" type="text"     id="regName"      placeholder="Nombre completo"                 required autocomplete="name">
+                    <input class="input-field" type="email"    id="regEmail"     placeholder="Correo electrónico"              required autocomplete="email">
+                    <input class="input-field" type="password" id="regPassword"  placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
+                    <input class="input-field" type="password" id="regPassword2" placeholder="Confirmar contraseña"           required minlength="6">
+                    <button type="submit" class="btn-azul-full" style="margin-top:4px;">
                         <i class="fa-solid fa-user-plus"></i> Crear Cuenta
                     </button>
                 </form>
                 <div id="registerConfirm" style="display:none;" class="confirm-box">
                     <i class="fa-solid fa-envelope-circle-check"></i>
-                    <h3>¡Revisa tu correo!</h3>
-                    <p>Te enviamos un enlace de verificación. Haz clic en él para activar tu cuenta y luego inicia sesión.</p>
-                    <button class="btn btn-salmon btn-sm" style="margin-top:15px;" onclick="switchTab('login')">
+                    <h3>¡Cuenta creada!</h3>
+                    <p>Ya puedes iniciar sesión con tu correo y contraseña.</p>
+                    <button class="confirm-btn" onclick="switchTab('login')">
                         <i class="fa-solid fa-right-to-bracket"></i> Ir a Iniciar Sesión
                     </button>
                 </div>
@@ -98,25 +250,25 @@
 
             <!-- RECUPERAR CONTRASEÑA -->
             <div class="tab-panel" id="panel-forgot">
-                <div style="text-align:center;margin-bottom:20px;">
-                    <i class="fa-solid fa-key" style="font-size:2rem;color:var(--salmon);"></i>
-                    <h3 style="color:var(--azul-oscuro);margin-top:10px;margin-bottom:8px;">Recuperar Contraseña</h3>
-                    <p style="color:var(--texto-gris);font-size:0.9rem;">Te enviaremos un enlace para restablecer tu contraseña.</p>
+                <div style="text-align:center;margin-bottom:24px;">
+                    <div style="width:56px;height:56px;border-radius:50%;background:rgba(249,115,22,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.5rem;color:var(--salmon);">
+                        <i class="fa-solid fa-key"></i>
+                    </div>
+                    <h3 style="color:#F1F5F9;margin-bottom:8px;font-family:'Outfit',sans-serif;">Recuperar Contraseña</h3>
+                    <p style="color:#64748B;font-size:0.85rem;">Te enviaremos un enlace para crear una nueva contraseña.</p>
                 </div>
                 <form id="resetForm" onsubmit="enviarResetPassword(event)">
-                    <div class="form-group">
-                        <input type="email" id="resetEmail" placeholder="Correo electrónico" required autocomplete="email">
-                    </div>
-                    <button type="submit" class="btn btn-salmon" style="width:100%;">
+                    <input class="input-field" type="email" id="resetEmail" placeholder="Correo electrónico" required autocomplete="email">
+                    <button type="submit" class="btn-salmon-full">
                         <i class="fa-solid fa-paper-plane"></i> Enviar enlace
                     </button>
                 </form>
                 <div id="resetConfirm" style="display:none;" class="confirm-box">
                     <i class="fa-solid fa-circle-check"></i>
                     <h3>¡Enlace enviado!</h3>
-                    <p>Revisa tu bandeja (y carpeta spam). Haz clic en el enlace para crear una nueva contraseña.</p>
+                    <p>Revisa tu bandeja de entrada (y carpeta spam). Haz clic en el enlace para crear una nueva contraseña.</p>
                 </div>
-                <div style="text-align:center;margin-top:15px;">
+                <div style="text-align:center;margin-top:16px;">
                     <button class="reset-link" onclick="switchTab('login')">
                         <i class="fa-solid fa-arrow-left"></i> Volver al login
                     </button>
@@ -128,21 +280,21 @@
     <div id="toastContainer" class="toast-container"></div>
     <script src="scripts.js"></script>
     <script>
-        window.addEventListener('load',function(){
-            var l=document.getElementById('pageLoader');
-            if(l){l.classList.add('hidden');setTimeout(function(){l.remove();},700);}
+        window.addEventListener('load', function() {
+            var l = document.getElementById('pageLoader');
+            if (l) { l.classList.add('hidden'); setTimeout(function(){ l.remove(); }, 700); }
         });
-        function switchTab(id){
-            ['login','register','forgot'].forEach(function(n){
-                var p=document.getElementById('panel-'+n);
-                if(p)p.classList.remove('active');
+        function switchTab(id) {
+            ['login','register','forgot'].forEach(function(n) {
+                var p = document.getElementById('panel-'+n);
+                if (p) p.classList.remove('active');
             });
-            var t=document.getElementById('panel-'+id);
-            if(t)t.classList.add('active');
-            var tl=document.getElementById('tabLogin');
-            var tr=document.getElementById('tabRegister');
-            if(tl)tl.classList.toggle('active',id==='login');
-            if(tr)tr.classList.toggle('active',id==='register');
+            var t = document.getElementById('panel-'+id);
+            if (t) t.classList.add('active');
+            var tl = document.getElementById('tabLogin');
+            var tr = document.getElementById('tabRegister');
+            if (tl) tl.classList.toggle('active', id === 'login');
+            if (tr) tr.classList.toggle('active', id === 'register');
         }
     </script>
 </body>

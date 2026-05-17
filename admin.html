@@ -352,5 +352,38 @@
     </div>
 
     <script src="admin-scripts.js"></script>
+
+    <!-- MODAL EDITAR PROMOCIÓN -->
+    <div id="editPromoModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:9999;align-items:center;justify-content:center;">
+      <div style="background:white;border-radius:20px;padding:35px;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-height:90vh;overflow-y:auto;">
+        <h3 style="color:var(--azul-oscuro);margin-bottom:20px;"><i class="fa-solid fa-pen" style="color:var(--salmon);"></i> Editar Promoción</h3>
+        <form onsubmit="saveEditPromo(event)">
+          <input type="hidden" id="editPromoId">
+          <div class="form-row">
+            <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Título</label><input id="editPromoTitle" type="text" required style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;"></div>
+            <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Código</label><input id="editPromoCode" type="text" required style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;text-transform:uppercase;"></div>
+          </div>
+          <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Descripción</label><input id="editPromoDesc" type="text" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;margin-bottom:12px;"></div>
+          <div class="form-row">
+            <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Tipo</label>
+              <select id="editPromoType" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;">
+                <option value="percentage">Porcentaje (%)</option>
+                <option value="fixed">Monto fijo ($)</option>
+              </select>
+            </div>
+            <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Valor</label><input id="editPromoValue" type="number" min="1" required style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;"></div>
+          </div>
+          <div class="form-row" style="margin-top:4px;">
+            <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Inicio</label><input id="editPromoStart" type="date" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;"></div>
+            <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Vence</label><input id="editPromoEnd" type="date" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;"></div>
+            <div><label style="font-size:0.85rem;color:#666;display:block;margin-bottom:4px;">Límite usos</label><input id="editPromoLimit" type="number" min="1" placeholder="Sin límite" style="width:100%;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:Inter,sans-serif;"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button type="button" class="btn btn-sm" style="background:#e0e0e0;color:#333;flex:1;" onclick="closeEditPromo()">Cancelar</button>
+            <button type="submit" class="btn btn-salmon" style="flex:2;"><i class="fa-solid fa-floppy-disk"></i> Guardar cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
 </body>
 </html>

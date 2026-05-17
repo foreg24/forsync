@@ -62,6 +62,7 @@ export async function initSchema() {
       payment_status   TEXT DEFAULT 'pending',
       payment_method   TEXT,
       paypal_reference TEXT,
+      cancel_reason    TEXT,
       notes            TEXT,
       created_at       TIMESTAMPTZ DEFAULT NOW(),
       updated_at       TIMESTAMPTZ DEFAULT NOW()
@@ -110,7 +111,16 @@ export async function initSchema() {
     )
   `;
   await db`
-    CREATE TABLE IF NOT EXISTS promotions (
+    CREATE TABLE IF NOT EXISTS promo_usage (
+      id         TEXT PRIMARY KEY,
+      promo_id   TEXT NOT NULL,
+      user_id    TEXT NOT NULL,
+      used_at    TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(promo_id, user_id)
+    )
+  `;
+  // Migración segura: agregar cancel_reason si no existe
+  await db`ALTER TABLE orders ADD COLUMN IF NOT EXISTS cancel_reason TEXT`;
       id             TEXT PRIMARY KEY,
       title          TEXT NOT NULL,
       description    TEXT,

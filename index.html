@@ -162,6 +162,35 @@
         <div class="section">
             <h2 class="section-title">Nuestros Servicios</h2>
             <p class="section-subtitle">Soluciones de desarrollo de software adaptadas a tus necesidades. Todos los precios son por desarrollo, sin incluir hosting ni dominio.</p>
+            <!-- FILTROS -->
+            <div class="services-filter-bar" id="servicesFilterBar">
+                <div class="filter-group">
+                    <label>Categoría</label>
+                    <div class="filter-chips">
+                        <button class="chip active" data-cat="">Todos</button>
+                        <button class="chip" data-cat="web">Web</button>
+                        <button class="chip" data-cat="ecommerce">E-Commerce</button>
+                        <button class="chip" data-cat="app">Aplicaciones</button>
+                    </div>
+                </div>
+                <div class="filter-group">
+                    <label>Precio mínimo</label>
+                    <input type="number" id="filterMinPrice" placeholder="$0" step="50000" min="0" oninput="applyFilters()">
+                </div>
+                <div class="filter-group">
+                    <label>Precio máximo</label>
+                    <input type="number" id="filterMaxPrice" placeholder="Sin límite" step="50000" min="0" oninput="applyFilters()">
+                </div>
+                <div class="filter-group" style="justify-content:flex-end;">
+                    <label class="filter-toggle">
+                        <input type="checkbox" id="filterPromo" onchange="applyFilters()">
+                        <span>Solo en promo</span>
+                    </label>
+                    <button class="btn btn-sm" style="background:#e0e0e0;color:#555;margin-top:8px;" onclick="resetFilters()">
+                        <i class="fa-solid fa-rotate-left"></i> Limpiar
+                    </button>
+                </div>
+            </div>
             <div class="services-grid" id="servicesGrid"></div>
         </div>
     </section>
@@ -401,9 +430,14 @@
                 <!-- CAMBIAR CONTRASEÑA -->
                 <hr style="border:0;border-top:2px solid #f0f0f0;margin:30px 0;">
                 <h3 style="color:var(--azul-oscuro);margin-bottom:15px;"><i class="fa-solid fa-lock"></i> Seguridad</h3>
-                <button type="button" class="btn btn-azul btn-sm" id="changePwdBtn">
-                    <i class="fa-solid fa-key"></i> Cambiar Contraseña
-                </button>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="button" class="btn btn-azul btn-sm" id="changePwdBtn">
+                        <i class="fa-solid fa-key"></i> Cambiar Contraseña
+                    </button>
+                    <button type="button" class="btn btn-sm" style="background:#FEE2E2;color:#991B1B;" onclick="openDeleteAccountModal()">
+                        <i class="fa-solid fa-user-slash"></i> Eliminar Cuenta
+                    </button>
+                </div>
 
                 <!-- RESEÑAS — solo si ha comprado -->
                 <div id="reviewSection" style="display:none;">
@@ -559,6 +593,10 @@
         <div style="background:white;border-radius:20px;padding:35px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
             <h3 style="color:var(--azul-oscuro);margin-bottom:20px;"><i class="fa-solid fa-key" style="color:var(--salmon);"></i> Cambiar Contraseña</h3>
             <form onsubmit="submitNewPassword(event)">
+                <div class="form-group" id="oldPasswordGroup">
+                    <label style="font-size:0.9rem;color:var(--texto-gris);margin-bottom:6px;display:block;">Contraseña actual</label>
+                    <input type="password" id="oldPassword" placeholder="Tu contraseña actual" style="width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;">
+                </div>
                 <div class="form-group">
                     <label style="font-size:0.9rem;color:var(--texto-gris);margin-bottom:6px;display:block;">Nueva contraseña</label>
                     <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres" minlength="6" required style="width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;">
@@ -572,6 +610,25 @@
                     <button type="submit" class="btn btn-salmon" style="flex:1;"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ELIMINAR CUENTA -->
+    <div id="deleteAccountModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center;">
+        <div style="background:white;border-radius:20px;padding:35px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <h3 style="color:#991B1B;margin-bottom:10px;"><i class="fa-solid fa-triangle-exclamation" style="color:#EF4444;"></i> Eliminar Cuenta</h3>
+            <p style="color:var(--texto-gris);font-size:0.9rem;margin-bottom:20px;line-height:1.6;">Esta acción es <strong>irreversible</strong>. Se eliminarán todos tus datos, pedidos y cotizaciones. Escribe tu contraseña para confirmar.</p>
+            <div class="form-group">
+                <input type="password" id="deleteAccountPassword" placeholder="Tu contraseña actual" style="width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;">
+            </div>
+            <p style="font-size:0.85rem;color:#EF4444;margin-bottom:15px;">Escribe <strong>ELIMINAR</strong> para confirmar:</p>
+            <div class="form-group">
+                <input type="text" id="deleteAccountConfirm" placeholder="ELIMINAR" style="width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;">
+            </div>
+            <div style="display:flex;gap:10px;margin-top:10px;">
+                <button type="button" class="btn btn-sm" style="background:#e0e0e0;color:#333;flex:1;" onclick="closeDeleteAccountModal()">Cancelar</button>
+                <button type="button" class="btn btn-sm" style="background:#EF4444;color:white;flex:1;" onclick="confirmarEliminarCuenta()"><i class="fa-solid fa-trash"></i> Eliminar mi cuenta</button>
+            </div>
         </div>
     </div>
 
