@@ -500,7 +500,6 @@ function renderServiceDetail() {
     + '<button class="scroll-btn right" onclick="document.getElementById(\'carouselSimilar\').scrollBy({left:320,behavior:\'smooth\'})"><i class="fa-solid fa-chevron-right"></i></button>'
     + '</div></section>';
 }
-}
 
 // ================= REVIEWS =================
 function renderReviews() {
