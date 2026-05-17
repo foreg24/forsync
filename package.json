@@ -2,9 +2,10 @@
   "name": "forsync",
   "version": "2.0.0",
   "description": "ForSync - Desarrollo de Software Profesional",
+  "type": "module",
   "scripts": {
     "dev": "vercel dev",
-    "build": "echo 'Static site, no build needed'"
+    "build": "echo 'No build needed'"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.9.4",
