@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForSync | Acceso</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .login-tabs{display:flex;border-bottom:2px solid #f0f0f0;margin-bottom:25px;}
+        .login-tab{flex:1;padding:12px;border:none;background:none;font-size:0.95rem;font-weight:600;color:var(--texto-gris);cursor:pointer;border-bottom:3px solid transparent;transition:all 0.3s;font-family:'Inter',sans-serif;margin-bottom:-2px;}
+        .login-tab.active{color:var(--salmon);border-bottom-color:var(--salmon);}
+        .tab-panel{display:none;}
+        .tab-panel.active{display:block;animation:fadeIn 0.3s ease;}
+        .reset-link{background:none;border:none;color:var(--azul-claro);cursor:pointer;font-size:0.85rem;text-decoration:underline;padding:0;font-family:'Inter',sans-serif;}
+        .confirm-box{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:25px;text-align:center;margin-top:15px;}
+        .confirm-box i{font-size:2.5rem;color:#10B981;margin-bottom:12px;display:block;}
+        .confirm-box h3{color:var(--azul-oscuro);margin-bottom:8px;}
+        .confirm-box p{color:var(--texto-gris);font-size:0.9rem;line-height:1.6;}
+    </style>
+</head>
+<body>
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-logo"><i class="fa-solid fa-code"></i> ForSync</div>
+        <div class="loader-spinner"></div>
+        <p>Cargando...</p>
+    </div>
+
+    <nav class="navbar">
+        <a href="index.html" class="logo"><i class="fa-solid fa-code"></i> ForSync</a>
+    </nav>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-tabs">
+                <button class="login-tab active" id="tabLogin" onclick="switchTab('login')">
+                    <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+                </button>
+                <button class="login-tab" id="tabRegister" onclick="switchTab('register')">
+                    <i class="fa-solid fa-user-plus"></i> Crear Cuenta
+                </button>
+            </div>
+
+            <!-- LOGIN -->
+            <div class="tab-panel active" id="panel-login">
+                <button class="btn btn-google" onclick="iniciarGoogleOAuth()" style="width:100%;">
+                    <i class="fa-brands fa-google"></i> Continuar con Google
+                </button>
+                <div class="divider">o con correo</div>
+                <form id="loginForm" onsubmit="procesarLogin(event)">
+                    <div class="form-group">
+                        <input type="email" id="email" placeholder="Correo electrónico" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="password" placeholder="Contraseña" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-salmon" style="width:100%;margin-top:5px;">
+                        <i class="fa-solid fa-arrow-right"></i> Ingresar
+                    </button>
+                </form>
+                <div style="text-align:center;margin-top:15px;">
+                    <button class="reset-link" onclick="switchTab('forgot')">¿Olvidaste tu contraseña?</button>
+                </div>
+            </div>
+
+            <!-- REGISTRO -->
+            <div class="tab-panel" id="panel-register">
+                <button class="btn btn-google" onclick="iniciarGoogleOAuth()" style="width:100%;">
+                    <i class="fa-brands fa-google"></i> Registrarse con Google
+                </button>
+                <div class="divider">o crea tu cuenta</div>
+                <form id="registerForm" onsubmit="procesarRegistro(event)">
+                    <div class="form-group">
+                        <input type="text" id="regName" placeholder="Nombre completo" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <input type="email" id="regEmail" placeholder="Correo electrónico" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="regPassword" placeholder="Contraseña (mín. 6 caracteres)" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="regPassword2" placeholder="Confirmar contraseña" required minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-azul" style="width:100%;margin-top:5px;">
+                        <i class="fa-solid fa-user-plus"></i> Crear Cuenta
+                    </button>
+                </form>
+                <div id="registerConfirm" style="display:none;" class="confirm-box">
+                    <i class="fa-solid fa-envelope-circle-check"></i>
+                    <h3>¡Revisa tu correo!</h3>
+                    <p>Te enviamos un enlace de verificación. Haz clic en él para activar tu cuenta y luego inicia sesión.</p>
+                    <button class="btn btn-salmon btn-sm" style="margin-top:15px;" onclick="switchTab('login')">
+                        <i class="fa-solid fa-right-to-bracket"></i> Ir a Iniciar Sesión
+                    </button>
+                </div>
+            </div>
+
+            <!-- RECUPERAR CONTRASEÑA -->
+            <div class="tab-panel" id="panel-forgot">
+                <div style="text-align:center;margin-bottom:20px;">
+                    <i class="fa-solid fa-key" style="font-size:2rem;color:var(--salmon);"></i>
+                    <h3 style="color:var(--azul-oscuro);margin-top:10px;margin-bottom:8px;">Recuperar Contraseña</h3>
+                    <p style="color:var(--texto-gris);font-size:0.9rem;">Te enviaremos un enlace para restablecer tu contraseña.</p>
+                </div>
+                <form id="resetForm" onsubmit="enviarResetPassword(event)">
+                    <div class="form-group">
+                        <input type="email" id="resetEmail" placeholder="Correo electrónico" required autocomplete="email">
+                    </div>
+                    <button type="submit" class="btn btn-salmon" style="width:100%;">
+                        <i class="fa-solid fa-paper-plane"></i> Enviar enlace
+                    </button>
+                </form>
+                <div id="resetConfirm" style="display:none;" class="confirm-box">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <h3>¡Enlace enviado!</h3>
+                    <p>Revisa tu bandeja (y carpeta spam). Haz clic en el enlace para crear una nueva contraseña.</p>
+                </div>
+                <div style="text-align:center;margin-top:15px;">
+                    <button class="reset-link" onclick="switchTab('login')">
+                        <i class="fa-solid fa-arrow-left"></i> Volver al login
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+    <script src="scripts.js"></script>
+    <script>
+        window.addEventListener('load',function(){
+            var l=document.getElementById('pageLoader');
+            if(l){l.classList.add('hidden');setTimeout(function(){l.remove();},700);}
+        });
+        function switchTab(id){
+            ['login','register','forgot'].forEach(function(n){
+                var p=document.getElementById('panel-'+n);
+                if(p)p.classList.remove('active');
+            });
+            var t=document.getElementById('panel-'+id);
+            if(t)t.classList.add('active');
+            var tl=document.getElementById('tabLogin');
+            var tr=document.getElementById('tabRegister');
+            if(tl)tl.classList.toggle('active',id==='login');
+            if(tr)tr.classList.toggle('active',id==='register');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForSync | Panel de Administración</title>
+    <link rel="stylesheet" href="admin-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- ADMIN NAVBAR -->
+    <nav class="admin-navbar">
+        <div style="display:flex;align-items:center;gap:15px;">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+            <a href="index.html" class="logo"><i class="fa-solid fa-code"></i> ForSync <span>Admin</span></a>
+        </div>
+        <div class="admin-user">
+            <span id="adminUserDisplay">Administrador</span>
+            <i class="fa-solid fa-user-shield"></i>
+        </div>
+    </nav>
+
+    <div class="admin-layout">
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <h3><i class="fa-solid fa-laptop-code"></i> ForSync</h3>
+                <p>Panel de gestión</p>
+            </div>
+
+            <button class="tab-btn active" onclick="abrirPestana('sec-dashboard', this)">
+                <i class="fa-solid fa-chart-line"></i> Dashboard
+            </button>
+            <button class="tab-btn" onclick="abrirPestana('sec-servicios', this)">
+                <i class="fa-solid fa-box"></i> Servicios
+            </button>
+            <button class="tab-btn" onclick="abrirPestana('sec-pedidos', this)">
+                <i class="fa-solid fa-cart-shopping"></i> Pedidos
+            </button>
+            <button class="tab-btn" onclick="abrirPestana('sec-cotizaciones', this)">
+                <i class="fa-solid fa-file-invoice-dollar"></i> Cotizaciones
+            </button>
+            <button class="tab-btn" onclick="abrirPestana('sec-promociones', this)">
+                <i class="fa-solid fa-tag"></i> Promociones
+            </button>
+            <button class="tab-btn" onclick="abrirPestana('sec-mensajes', this)">
+                <i class="fa-solid fa-envelope"></i> Mensajes
+            </button>
+            <button class="tab-btn" onclick="abrirPestana('sec-reviews', this)">
+                <i class="fa-solid fa-star"></i> Reseñas
+            </button>
+            <button class="tab-btn" onclick="abrirPestana('sec-estadisticas', this)">
+                <i class="fa-solid fa-chart-pie"></i> Estadísticas
+            </button>
+
+            <button class="logout-btn" onclick="salirAdmin()">
+                <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+            </button>
+        </aside>
+
+        <!-- Mobile sidebar overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- MAIN CONTENT -->
+        <main class="admin-content">
+
+            <!-- SECCIÓN: DASHBOARD -->
+            <section id="sec-dashboard" class="admin-section active">
+                <h2><i class="fa-solid fa-chart-line"></i> Dashboard</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon salmon"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div class="stat-info">
+                            <h4>Ventas Totales</h4>
+                            <p id="dashSales">$0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-cart-shopping"></i></div>
+                        <div class="stat-info">
+                            <h4>Total Pedidos</h4>
+                            <p id="dashOrders">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-file-invoice"></i></div>
+                        <div class="stat-info">
+                            <h4>Cotizaciones</h4>
+                            <p id="dashQuotes">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fa-solid fa-box"></i></div>
+                        <div class="stat-info">
+                            <h4>Servicios Activos</h4>
+                            <p id="dashServices">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><i class="fa-solid fa-envelope"></i></div>
+                        <div class="stat-info">
+                            <h4>Mensajes Nuevos</h4>
+                            <p id="dashMessages">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon teal"><i class="fa-solid fa-hourglass-half"></i></div>
+                        <div class="stat-info">
+                            <h4>Pendientes</h4>
+                            <p id="dashPending">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="admin-form">
+                    <h4><i class="fa-solid fa-clock-rotate-left"></i> Actividad Reciente</h4>
+                    <div id="recentActivity" style="margin-top:15px;">
+                        <p style="color:#999;text-align:center;padding:20px;">Cargando actividad...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: SERVICIOS -->
+            <section id="sec-servicios" class="admin-section">
+                <h2><i class="fa-solid fa-box"></i> Gestión de Servicios</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon salmon"><i class="fa-solid fa-box"></i></div>
+                        <div class="stat-info">
+                            <h4>Total Servicios</h4>
+                            <p id="statProducts">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <h4>Activos</h4>
+                            <p id="statActive">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fa-solid fa-eye-slash"></i></div>
+                        <div class="stat-info">
+                            <h4>Ocultos</h4>
+                            <p id="statHidden">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Add Service Form -->
+                <div class="admin-form">
+                    <h4><i class="fa-solid fa-plus-circle"></i> Añadir Nuevo Servicio</h4>
+                    <form id="addProductForm">
+                        <div class="form-row">
+                            <input type="text" id="prodName" placeholder="Nombre del servicio" required>
+                            <input type="number" id="prodPrice" placeholder="Precio desde ($)" min="0" required>
+                        </div>
+                        <div class="form-row">
+                            <select id="prodCategory" required>
+                                <option value="">Categoría</option>
+                                <option value="web">Desarrollo Web</option>
+                                <option value="ecommerce">E-Commerce</option>
+                                <option value="app">Aplicación Web</option>
+                            </select>
+                            <input type="number" id="prodDelivery" placeholder="Días de entrega" min="1" required>
+                        </div>
+                        <textarea id="prodDesc" placeholder="Descripción del servicio" rows="3" required></textarea>
+                        <textarea id="prodFeatures" placeholder="Características (una por línea)" rows="3"></textarea>
+                        <div class="form-row">
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+                                <input type="checkbox" id="checkPromo" onchange="togglePromoInput()"> ¿En promoción?
+                            </label>
+                            <input type="number" id="precioPromo" placeholder="Precio en Promoción ($)" style="display:none;">
+                        </div>
+                        <button type="submit" class="btn btn-salmon">
+                            <i class="fa-solid fa-save"></i> Guardar Servicio
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Products Table -->
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Servicio</th>
+                                <th>Categoría</th>
+                                <th>Precio</th>
+                                <th>Entrega</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: PEDIDOS -->
+            <section id="sec-pedidos" class="admin-section">
+                <h2><i class="fa-solid fa-cart-shopping"></i> Pedidos</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-info">
+                            <h4>Pendientes</h4>
+                            <p id="pedPendientes">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-spinner"></i></div>
+                        <div class="stat-info">
+                            <h4>En Desarrollo</h4>
+                            <p id="pedProgreso">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-check"></i></div>
+                        <div class="stat-info">
+                            <h4>Entregados</h4>
+                            <p id="pedEntregados">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Orders Grid -->
+                <div class="ventas-grid" id="ordersContainer"></div>
+            </section>
+
+            <!-- SECCIÓN: COTIZACIONES -->
+            <section id="sec-cotizaciones" class="admin-section">
+                <h2><i class="fa-solid fa-file-invoice-dollar"></i> Cotizaciones</h2>
+                <div class="ventas-grid" id="quotesContainer"></div>
+            </section>
+
+            <!-- SECCIÓN: PROMOCIONES -->
+            <section id="sec-promociones" class="admin-section">
+                <h2><i class="fa-solid fa-tag"></i> Promociones</h2>
+
+                <div class="admin-form">
+                    <h4><i class="fa-solid fa-plus-circle"></i> Nueva Promoción</h4>
+                    <form id="addPromoForm">
+                        <div class="form-row">
+                            <input type="text" id="promoTitle" placeholder="Título de la promoción" required>
+                            <input type="text" id="promoCode" placeholder="Código (ej: FORSYNC20)" required>
+                        </div>
+                        <textarea id="promoDesc" placeholder="Descripción" rows="2"></textarea>
+                        <div class="form-row">
+                            <select id="promoType" required>
+                                <option value="">Tipo de descuento</option>
+                                <option value="percentage">Porcentaje (%)</option>
+                                <option value="fixed">Monto fijo ($)</option>
+                            </select>
+                            <input type="number" id="promoValue" placeholder="Valor del descuento" min="1" required>
+                        </div>
+                        <div class="form-row">
+                            <input type="date" id="promoStart" placeholder="Fecha inicio">
+                            <input type="date" id="promoEnd" placeholder="Fecha fin">
+                        </div>
+                        <input type="number" id="promoLimit" placeholder="Límite de usos (opcional)">
+                        <button type="submit" class="btn btn-salmon">
+                            <i class="fa-solid fa-save"></i> Crear Promoción
+                        </button>
+                    </form>
+                </div>
+
+                <div class="table-container" style="margin-top:30px;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Promoción</th>
+                                <th>Código</th>
+                                <th>Descuento</th>
+                                <th>Vigencia</th>
+                                <th>Usos</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="promosTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: MENSAJES -->
+            <section id="sec-mensajes" class="admin-section">
+                <h2><i class="fa-solid fa-envelope"></i> Mensajes de Contacto <button class="btn btn-azul btn-sm" onclick="renderMessages()" style="margin-left:12px;font-size:0.8rem;"><i class="fa-solid fa-rotate-right"></i> Actualizar</button></h2>
+                <div class="ventas-grid" id="messagesContainer"></div>
+            </section>
+
+            <!-- SECCIÓN: RESEÑAS -->
+            <section id="sec-reviews" class="admin-section">
+                <h2><i class="fa-solid fa-star"></i> Reseñas</h2>
+                <div class="ventas-grid" id="reviewsAdminContainer"></div>
+            </section>
+
+            <!-- SECCIÓN: ESTADÍSTICAS -->
+            <section id="sec-estadisticas" class="admin-section">
+                <h2><i class="fa-solid fa-chart-pie"></i> Estadísticas</h2>
+
+                <select class="period-selector" id="periodSelector" onchange="updateStats()">
+                    <option value="week">Esta Semana</option>
+                    <option value="month">Este Mes</option>
+                    <option value="year">Este Año</option>
+                </select>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon salmon"><i class="fa-solid fa-dollar-sign"></i></div>
+                        <div class="stat-info">
+                            <h4>Ventas Totales</h4>
+                            <p id="statSales">$0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fa-solid fa-shopping-bag"></i></div>
+                        <div class="stat-info">
+                            <h4>Total Pedidos</h4>
+                            <p id="statOrders">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fa-solid fa-box-open"></i></div>
+                        <div class="stat-info">
+                            <h4>Servicios Activos</h4>
+                            <p id="statProductsActive">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon orange"><i class="fa-solid fa-hourglass-half"></i></div>
+                        <div class="stat-info">
+                            <h4>Pendientes</h4>
+                            <p id="statPending">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="chart-container">
+                    <h3><i class="fa-solid fa-chart-bar"></i> Ventas por Período</h3>
+                    <div style="position:relative;height:300px;width:100%;"><canvas id="salesChart"></canvas></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="admin-scripts.js"></script>
+</body>
+</html>

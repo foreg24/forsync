@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ForSync | Desarrollo de Software Profesional</title>
+    <meta name="description" content="ForSync - Servicios profesionales de desarrollo de software. Landing pages, tiendas virtuales, sistemas de reservas, inventario y más.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- PAGE LOADER -->
+    <div class="page-loader" id="pageLoader">
+        <div class="loader-logo"><i class="fa-solid fa-code"></i> ForSync</div>
+        <div class="loader-spinner"></div>
+        <p>Iniciando ForSync...</p>
+    </div>
+
+    <!-- PROMO BANNER -->
+    <div class="promo-banner" id="promoBanner" style="display:none;">
+        <span id="promoText"></span>
+        <button class="close-banner" onclick="document.getElementById('promoBanner').style.display='none'">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="navbar" id="navbar">
+        <a href="#inicio" class="logo" data-section="inicio">
+            <i class="fa-solid fa-code"></i> ForSync
+        </a>
+
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#servicios" data-section="servicios" title="Servicios">
+                <i class="fa-solid fa-laptop-code"></i> <span>Servicios</span>
+            </a></li>
+            <li><a href="#cotizar" data-section="cotizar" title="Cotizar">
+                <i class="fa-solid fa-file-invoice-dollar"></i> <span>Cotizar</span>
+            </a></li>
+            <li><a href="#nosotros" data-section="nosotros" title="Nosotros">
+                <i class="fa-solid fa-users"></i> <span>Nosotros</span>
+            </a></li>
+            <li><a href="#contacto" data-section="contacto" title="Contacto">
+                <i class="fa-solid fa-envelope"></i> <span>Contacto</span>
+            </a></li>
+            <li><a href="#faqs" data-section="faqs" title="FAQs">
+                <i class="fa-solid fa-circle-question"></i> <span>FAQs</span>
+            </a></li>
+
+            <!-- Menú de Usuario -->
+            <li class="user-menu-container">
+                <div class="user-icon" id="userIconBtn" onclick="event.stopPropagation(); toggleUserMenu()">
+                    <i class="fa-solid fa-user"></i> <span id="userNameDisplay">Entrar</span>
+                </div>
+                <div class="user-dropdown" id="userDropdown">
+                    <a href="login.html" id="linkLogin"><i class="fa-solid fa-right-to-bracket"></i> Ingresar</a>
+                    <a href="#perfil" id="linkPerfil" style="display:none;" data-section="perfil"><i class="fa-solid fa-id-card"></i> Mi Perfil</a>
+                    <a href="admin.html" id="linkAdmin" style="display:none;"><i class="fa-solid fa-gear"></i> Panel Admin</a>
+                    <a href="#" id="linkLogout" style="display:none;" onclick="cerrarSesion()"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- CARRITO -->
+    <div class="cart-bubble" onclick="toggleCart()">
+        <i class="fa-solid fa-cart-shopping" id="cartIcon"></i>
+        <span class="cart-count" style="display:none;">0</span>
+    </div>
+    <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h2><i class="fa-solid fa-cart-shopping"></i> Tu Carrito</h2>
+            <i class="fa-solid fa-xmark" onclick="toggleCart()"></i>
+        </div>
+        <div class="cart-body" id="cartBody">
+            <div class="cart-empty">
+                <i class="fa-solid fa-cart-arrow-down"></i>
+                <p>Tu carrito está vacío</p>
+                <p style="font-size: 0.85rem; margin-top: 10px;">¡Agrega servicios de nuestro catálogo!</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <h3>Total: <span class="cart-total" id="cartTotal">$0</span></h3>
+            <button class="btn btn-salmon" style="width:100%;margin-top:10px;" onclick="proceedToCheckout()">
+                <i class="fa-solid fa-credit-card"></i> Continuar al Pago
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= SECCIÓN: INICIO ================= -->
+    <section id="sec-inicio" class="page-section active">
+        <!-- HERO -->
+        <section class="hero">
+            <div class="hero-badge">
+                <i class="fa-solid fa-sparkles"></i> Desarrollo de software a tu medida
+            </div>
+            <h1>Tus <span>ideas</span>, hechas software</h1>
+            <p>En ForSync desarrollamos soluciones web profesionales: landing pages, tiendas virtuales, sistemas de reservas, inventario y más. Calidad garantizada.</p>
+            <div class="btn-group">
+                <a href="#servicios" class="btn btn-salmon btn-lg" data-section="servicios">
+                    <i class="fa-solid fa-rocket"></i> Ver Servicios
+                </a>
+                <a href="https://wa.me/573053478157?text=Hola%20ForSync,%20estoy%20interesado%20en%20sus%20servicios" target="_blank" class="btn btn-outline-white btn-lg">
+                    <i class="fa-brands fa-whatsapp"></i> Escríbenos
+                </a>
+            </div>
+        </section>
+
+        <!-- SERVICIOS DESTACADOS -->
+        <section class="section on-fire">
+            <h2 class="section-title">Servicios Destacados</h2>
+            <p class="section-subtitle">Soluciones diseñadas para impulsar tu negocio al siguiente nivel digital</p>
+            <div class="carousel-wrapper">
+                <button class="scroll-btn left" onclick="scrollCarousel(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="carousel" id="carouselFeatured"></div>
+                <button class="scroll-btn right" onclick="scrollCarousel(1)"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div style="text-align:center;margin-top:2rem;">
+                <button class="btn btn-azul" onclick="showSection('servicios')">
+                    <i class="fa-solid fa-grid-2"></i> Ver todos los servicios
+                </button>
+            </div>
+        </section>
+
+        <!-- POR QUÉ ELEGIRNOS -->
+        <section class="section" style="background: white; border-radius: var(--radio); margin: 2rem auto;">
+            <h2 class="section-title">¿Por qué elegir ForSync?</h2>
+            <div class="about-grid">
+                <div class="about-card">
+                    <i class="fa-solid fa-bolt"></i>
+                    <h3>Entrega Rápida</h3>
+                    <p>Cumplimos con los plazos establecidos. Tu proyecto estará listo en el tiempo acordado, sin excusas.</p>
+                </div>
+                <div class="about-card">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <h3>Código de Calidad</h3>
+                    <p>Desarrollamos con las mejores prácticas, código limpio, escalable y bien documentado.</p>
+                </div>
+                <div class="about-card">
+                    <i class="fa-solid fa-headset"></i>
+                    <h3>Soporte Post-Entrega</h3>
+                    <p>No te dejamos solo. Incluimos soporte técnico y capacitación para que manejes tu proyecto.</p>
+                </div>
+                <div class="about-card">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                    <h3>100% Responsive</h3>
+                    <p>Todos nuestros proyectos se ven perfectos en cualquier dispositivo: móvil, tablet y desktop.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- RESEÑAS -->
+        <section class="section">
+            <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+            <div class="reviews-grid" id="reviewsGrid"></div>
+        </section>
+    </section>
+
+    <!-- ================= SECCIÓN: SERVICIOS ================= -->
+    <section id="sec-servicios" class="page-section">
+        <div class="section">
+            <h2 class="section-title">Nuestros Servicios</h2>
+            <p class="section-subtitle">Soluciones de desarrollo de software adaptadas a tus necesidades. Todos los precios son por desarrollo, sin incluir hosting ni dominio.</p>
+            <div class="services-grid" id="servicesGrid"></div>
+        </div>
+    </section>
+
+    <!-- ================= SECCIÓN: DETALLE SERVICIO ================= -->
+    <section id="sec-detalle" class="page-section">
+        <div id="serviceDetail"></div>
+    </section>
+
+    <!-- ================= SECCIÓN: COTIZAR ================= -->
+    <section id="sec-cotizar" class="page-section">
+        <div class="quote-section">
+            <h2 class="section-title">Solicita tu Cotización</h2>
+            <p class="section-subtitle">¿Necesitas algo personalizado? Cuéntanos tu proyecto y te enviamos una cotización a tu medida.</p>
+            <div class="quote-form">
+                <form id="quoteForm">
+                    <div class="form-row">
+                        <input type="text" id="quoteName" placeholder="Tu Nombre" required>
+                        <input type="email" id="quoteEmail" placeholder="Tu Correo" required>
+                    </div>
+                    <input type="tel" id="quotePhone" placeholder="Teléfono (opcional)">
+                    <select id="quoteType" required>
+                        <option value="">Tipo de Proyecto</option>
+                        <option value="landing">Landing Page</option>
+                        <option value="ecommerce">Tienda Virtual</option>
+                        <option value="corporativa">Web Corporativa</option>
+                        <option value="reservas">Sistema de Reservas</option>
+                        <option value="inventario">Sistema de Inventario</option>
+                        <option value="blog">Blog / Web Educativa</option>
+                        <option value="dashboard">App Web / Dashboard</option>
+                        <option value="portafolio">Portafolio Creativo</option>
+                        <option value="otro">Otro (especificar)</option>
+                    </select>
+                    <textarea id="quoteDesc" placeholder="Describe tu proyecto: ¿Qué necesitas? ¿Cuál es tu objetivo? ¿Tienes alguna referencia?" rows="5" required></textarea>
+                    <div class="form-row">
+                        <select id="quoteBudget">
+                            <option value="">Rango de Presupuesto</option>
+                            <option value="200-500">$200.000 - $500.000</option>
+                            <option value="500-1M">$500.000 - $1.000.000</option>
+                            <option value="1M-2M">$1.000.000 - $2.000.000</option>
+                            <option value="2M+">Más de $2.000.000</option>
+                            <option value="no-sure">No estoy seguro</option>
+                        </select>
+                        <select id="quoteDeadline">
+                            <option value="">Tiempo de Entrega</option>
+                            <option value="urgente">Urgente (menos de 1 semana)</option>
+                            <option value="2-semanas">2 semanas</option>
+                            <option value="1-mes">1 mes</option>
+                            <option value="2-meses">2 meses</option>
+                            <option value="flexible">Flexible</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-salmon" style="width:100%;">
+                        <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud de Cotización
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SECCIÓN: NOSOTROS ================= -->
+    <section id="sec-nosotros" class="page-section">
+        <div class="about-hero">
+            <h1>Nuestra Historia</h1>
+            <p>ForSync nació con la visión de ofrecer soluciones tecnológicas de alta calidad a emprendedores y empresas. Creemos que cada negocio merece una presencia digital profesional.</p>
+        </div>
+        <div class="about-content">
+            <p>ForSync es una empresa de desarrollo de software fundada por <strong>Jesús Forero</strong>, un apasionado desarrollador con amplia experiencia en tecnologías web modernas. Aunque somos un equipo compacto, nuestro compromiso y dedicación nos permiten ofrecer resultados que compiten con agencias mucho más grandes.</p>
+            <p>Hemos ayudado a decenas de clientes a establecer su identidad digital, desde pequeños emprendimientos hasta empresas en crecimiento. Nuestro enfoque siempre ha sido entender las necesidades reales de cada cliente y entregar soluciones que generen resultados tangibles.</p>
+            <p>En ForSync no solo desarrollamos software, construimos relaciones a largo plazo con nuestros clientes. Nos enorgullece ver cómo los proyectos que entregamos ayudan a crecer sus negocios.</p>
+
+            <div class="founder-section">
+                <div class="founder-avatar">JF</div>
+                <div class="founder-info">
+                    <h3>Jesús Forero</h3>
+                    <p class="role">Fundador & Desarrollador Principal</p>
+                    <p>Desarrollador full-stack con pasión por crear soluciones tecnológicas que realmente marquen la diferencia. Especializado en aplicaciones web modernas, comercio electrónico y sistemas empresariales.</p>
+                </div>
+            </div>
+
+            <div class="about-grid">
+                <div class="about-card">
+                    <i class="fa-solid fa-bullseye"></i>
+                    <h3>Misión</h3>
+                    <p>Democratizar el acceso a tecnología web de calidad, ofreciendo soluciones accesibles y profesionales que impulsen el crecimiento digital de nuestros clientes.</p>
+                </div>
+                <div class="about-card">
+                    <i class="fa-solid fa-eye"></i>
+                    <h3>Visión</h3>
+                    <p>Ser el aliado tecnológico de confianza para emprendedores y empresas en Colombia, reconocidos por nuestra calidad, compromiso y resultados.</p>
+                </div>
+                <div class="about-card">
+                    <i class="fa-solid fa-heart"></i>
+                    <h3>Valores</h3>
+                    <p>Transparencia, excelencia, compromiso y mejora continua. Cada proyecto es una oportunidad de superarnos y entregar lo mejor.</p>
+                </div>
+            </div>
+
+            <div class="legal-info">
+                <h3><i class="fa-solid fa-scale-balanced"></i> Información Legal</h3>
+                <p><strong>Razón Social:</strong> ForSync</p>
+                <p><strong>Representante:</strong> Jesús Forero</p>
+                <p><strong>Correo:</strong> jesudavifosa24@gmail.com</p>
+                <p><strong>Teléfono:</strong> +57 305 347 8157</p>
+                <p><strong>País:</strong> Colombia</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SECCIÓN: CONTACTO ================= -->
+    <section id="sec-contacto" class="page-section">
+        <div class="section">
+            <h2 class="section-title">Contáctanos</h2>
+            <p class="section-subtitle">¿Tienes un proyecto en mente? Estamos listos para ayudarte. Escríbenos y respondemos en menos de 24 horas.</p>
+            <div class="floating-card">
+                <div class="contacto-grid">
+                    <div class="contacto-info">
+                        <h3><i class="fa-solid fa-address-book"></i> Información de Contacto</h3>
+
+                        <div class="contact-item">
+                            <i class="fa-brands fa-whatsapp"></i>
+                            <div>
+                                <h4>WhatsApp</h4>
+                                <p><a href="https://wa.me/573053478157" target="_blank">+57 305 347 8157</a></p>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <i class="fa-solid fa-envelope"></i>
+                            <div>
+                                <h4>Correo Electrónico</h4>
+                                <p><a href="mailto:jesudavifosa24@gmail.com">jesudavifosa24@gmail.com</a></p>
+                            </div>
+                        </div>
+
+                        <div class="contact-item">
+                            <i class="fa-solid fa-clock"></i>
+                            <div>
+                                <h4>Horario de Atención</h4>
+                                <p>Lunes a Sábado: 9:00 AM - 6:00 PM</p>
+                            </div>
+                        </div>
+
+                        <p class="socials-title"><i class="fa-solid fa-share-nodes"></i> Síguenos</p>
+                        <div class="footer-socials">
+                            <a href="https://instagram.com/y.isu_fxz4" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="https://facebook.com/Jesús%20Forero" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                            <a href="https://x.com/JessForero3" target="_blank" title="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                            <a href="https://wa.me/573053478157" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                            <a href="mailto:jesudavifosa24@gmail.com" title="Correo"><i class="fa-solid fa-envelope"></i></a>
+                        </div>
+                    </div>
+                    <div class="contacto-form">
+                        <h3><i class="fa-solid fa-paper-plane"></i> Envíanos un mensaje</h3>
+                        <form id="contactForm">
+                            <div class="form-group">
+                                <input type="text" id="contactName" placeholder="Tu Nombre" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" id="contactEmail" placeholder="Tu Correo" required>
+                            </div>
+                            <div class="form-group">
+                                <input type="text" id="contactSubject" placeholder="Asunto">
+                            </div>
+                            <div class="form-group">
+                                <textarea id="contactMessage" placeholder="Tu Mensaje" rows="5" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-azul" style="width:100%;">
+                                <i class="fa-solid fa-paper-plane"></i> Enviar Mensaje
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SECCIÓN: FAQS ================= -->
+    <section id="sec-faqs" class="page-section">
+        <div class="section">
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <p class="section-subtitle">Resolvemos tus dudas sobre nuestros servicios de desarrollo de software</p>
+            <div class="floating-card" style="padding:0;overflow:hidden;">
+                <div id="faqsContainer"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SECCIÓN: PERFIL ================= -->
+    <section id="sec-perfil" class="page-section">
+        <div class="section">
+            <h2 class="section-title">Mi Perfil</h2>
+            <div class="floating-card perfil-card">
+                <div class="perfil-header">
+                    <div class="perfil-avatar" id="perfilAvatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <h3 id="perfilNameDisplay">Cliente</h3>
+                    <p style="color:#999;font-size:0.9rem;" id="perfilEmailDisplay"></p>
+                </div>
+                <form id="profileForm" onsubmit="event.preventDefault()">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="perfilNombre" placeholder="Tu nombre">
+                    </div>
+                    <div class="form-group">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="perfilEmail" disabled>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" id="perfilPhone" placeholder="Ej: 305 347 8157">
+                    </div>
+                    <div class="form-group">
+                        <label>Ciudad</label>
+                        <input type="text" id="perfilCity" placeholder="Ej: Neiva, Huila">
+                    </div>
+                    <button type="button" class="btn btn-salmon" style="width:100%;" id="saveProfile">
+                        <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+                    </button>
+                </form>
+
+                <hr style="border:0;border-top:2px solid #f0f0f0;margin:30px 0;">
+
+                <h3 style="color:var(--azul-oscuro);margin-bottom:20px;"><i class="fa-solid fa-box"></i> Mis Pedidos</h3>
+                <div id="ordersList">
+                    <p style="text-align:center;color:#999;padding:30px;">No tienes pedidos aún.</p>
+                </div>
+
+                <hr style="border:0;border-top:2px solid #f0f0f0;margin:30px 0;">
+
+                <h3 style="color:var(--azul-oscuro);margin-bottom:20px;"><i class="fa-solid fa-file-invoice"></i> Mis Cotizaciones</h3>
+                <div id="quotesList">
+                    <p style="text-align:center;color:#999;padding:30px;">No tienes cotizaciones pendientes.</p>
+                </div>
+
+                <!-- CAMBIAR CONTRASEÑA -->
+                <hr style="border:0;border-top:2px solid #f0f0f0;margin:30px 0;">
+                <h3 style="color:var(--azul-oscuro);margin-bottom:15px;"><i class="fa-solid fa-lock"></i> Seguridad</h3>
+                <button type="button" class="btn btn-azul btn-sm" id="changePwdBtn">
+                    <i class="fa-solid fa-key"></i> Cambiar Contraseña
+                </button>
+
+                <!-- RESEÑAS — solo si ha comprado -->
+                <div id="reviewSection" style="display:none;">
+                    <hr style="border:0;border-top:2px solid #f0f0f0;margin:30px 0;">
+                    <h3 style="color:var(--azul-oscuro);margin-bottom:8px;"><i class="fa-solid fa-star"></i> Dejar una Reseña</h3>
+                    <p style="color:var(--texto-gris);font-size:0.9rem;margin-bottom:20px;">¡Gracias por confiar en nosotros! Tu reseña ayuda a otros clientes. Quedará pendiente de aprobación.</p>
+                    <form id="reviewSubmitForm">
+                        <div class="form-group">
+                            <label style="font-size:0.9rem;font-weight:600;color:var(--azul-oscuro);">Calificación</label>
+                            <div id="starRatingDisplay" style="font-size:1.8rem;color:#F59E0B;cursor:pointer;margin-bottom:10px;">
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                                <i class="fa-regular fa-star"></i>
+                            </div>
+                            <input type="hidden" id="reviewRatingVal" required>
+                        </div>
+                        <div class="form-group">
+                            <select id="reviewService" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;font-family:'Inter',sans-serif;">
+                                <option value="">Selecciona el servicio (opcional)</option>
+                                <option>Landing Page Profesional</option>
+                                <option>Tienda Virtual Básica</option>
+                                <option>Tienda Virtual Premium</option>
+                                <option>Web Corporativa</option>
+                                <option>Sistema de Reservas</option>
+                                <option>Sistema de Inventario</option>
+                                <option>Blog Personalizado</option>
+                                <option>App Web Dashboard</option>
+                                <option>Portafolio Creativo</option>
+                                <option>Web Educativa / Cursos</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="reviewComment" placeholder="Cuéntanos tu experiencia..." rows="4" style="width:100%;padding:12px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;font-family:'Inter',sans-serif;resize:vertical;" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-salmon" style="width:100%;">
+                            <i class="fa-solid fa-paper-plane"></i> Enviar Reseña
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SECCIÓN: CHECKOUT ================= -->
+    <section id="sec-checkout" class="page-section">
+        <div class="section">
+            <h2 class="section-title">Finalizar Compra</h2>
+            <div class="checkout-card">
+                <h2><i class="fa-solid fa-credit-card"></i> Resumen y Pago</h2>
+
+                <div id="checkoutContent">
+                    <form id="checkoutForm">
+                        <h4 style="color:var(--azul-medio);margin-bottom:15px;"><i class="fa-solid fa-user"></i> Datos del Cliente</h4>
+                        <div class="form-group">
+                            <input type="text" id="checkoutName" placeholder="Nombre Completo" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="checkoutEmail" placeholder="Correo electrónico" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="checkoutPhone" placeholder="Teléfono" required>
+                        </div>
+
+                        <div class="checkout-summary">
+                            <div class="items-list" id="checkoutItems"></div>
+                            <!-- Código promo -->
+                            <div class="promo-code-row" style="display:flex;gap:10px;margin:10px 0;">
+                                <input type="text" id="promoCodeInput" placeholder="Código de descuento (ej: FORSYNC20)" style="flex:1;padding:10px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:'Inter',sans-serif;">
+                                <button type="button" onclick="aplicarPromoCode()" class="btn btn-azul btn-sm"><i class="fa-solid fa-tag"></i> Aplicar</button>
+                            </div>
+                            <div id="promoCodeMsg" style="font-size:0.85rem;margin-bottom:8px;display:none;"></div>
+                            <div class="item-row total">
+                                <span>Total a Pagar:</span>
+                                <span id="checkoutTotal">$0</span>
+                            </div>
+                            <p><i class="fa-brands fa-cc-visa"></i> <i class="fa-brands fa-cc-mastercard"></i> <i class="fa-brands fa-cc-amex"></i> Pago seguro vía PayPal Sandbox</p>
+                        </div>
+
+                        <!-- PAYPAL SANDBOX PAYMENT -->
+                        <div class="paypal-payment-section">
+                            <h4><i class="fa-solid fa-lock"></i> Pago con PayPal (Modo Prueba)</h4>
+                            <p>Este es un entorno de prueba de PayPal. Puedes usar las credenciales de prueba para simular un pago.</p>
+
+                            <!-- PayPal Button Container -->
+                            <div id="paypal-button-container" class="paypal-btn-container"></div>
+
+                            <!-- Fallback button si PayPal no carga -->
+                            <button type="button" id="paypalFallbackBtn" class="paypal-fallback" onclick="simulatePaypalPayment()">
+                                <i class="fa-brands fa-paypal"></i> Simular Pago Exitoso (Prueba)
+                            </button>
+
+                            <div class="test-mode-badge">
+                                <i class="fa-solid fa-flask"></i> Modo Sandbox - No se procesan pagos reales
+                            </div>
+
+                            <div class="test-credentials">
+                                <p><strong>Cuentas de prueba PayPal:</strong></p>
+                                <p>Crea cuentas en <a href="https://developer.paypal.com/developer/accounts/" target="_blank">developer.paypal.com</a></p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Mensaje de éxito -->
+                <div id="mensajeExito" class="success-message">
+                    <i class="fa-solid fa-circle-check" style="font-size:3rem;margin-bottom:15px;"></i>
+                    <h3>¡Pago Exitoso!</h3>
+                    <p>Tu pedido ha sido confirmado</p>
+                    <p>Tu número de orden es:</p>
+                    <div class="guia" id="numGuia"></div>
+                    <p style="font-size:0.9rem;margin-top:10px;">Recibirás un correo con los detalles del proyecto</p>
+                    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px;">
+                        <button class="btn btn-azul" onclick="showSection('inicio')">
+                            <i class="fa-solid fa-house"></i> Volver al Inicio
+                        </button>
+                        <button class="btn btn-salmon" onclick="showSection('servicios')">
+                            <i class="fa-solid fa-cart-plus"></i> Hacer Otro Pedido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-brand">
+            <i class="fa-solid fa-code"></i> ForSync
+        </div>
+        <p class="footer-tagline">Desarrollo de software profesional a tu medida</p>
+        <div class="footer-socials">
+            <a href="https://instagram.com/y.isu_fxz4" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://facebook.com/Jesús%20Forero" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://x.com/JessForero3" target="_blank" title="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="https://wa.me/573053478157" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="mailto:jesudavifosa24@gmail.com" title="Correo"><i class="fa-solid fa-envelope"></i></a>
+        </div>
+        <div class="footer-links">
+            <a href="#" onclick="showSection('servicios')">Servicios</a>
+            <a href="#" onclick="showSection('cotizar')">Cotizar</a>
+            <a href="#" onclick="showSection('nosotros')">Nosotros</a>
+            <a href="#" onclick="showSection('contacto')">Contacto</a>
+            <a href="#" onclick="showSection('faqs')">FAQs</a>
+        </div>
+        <p>&copy; 2026 ForSync. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- MODAL: CAMBIAR CONTRASEÑA -->
+    <div id="changePwdModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center;">
+        <div style="background:white;border-radius:20px;padding:35px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+            <h3 style="color:var(--azul-oscuro);margin-bottom:20px;"><i class="fa-solid fa-key" style="color:var(--salmon);"></i> Cambiar Contraseña</h3>
+            <form onsubmit="submitNewPassword(event)">
+                <div class="form-group">
+                    <label style="font-size:0.9rem;color:var(--texto-gris);margin-bottom:6px;display:block;">Nueva contraseña</label>
+                    <input type="password" id="newPassword" placeholder="Mínimo 6 caracteres" minlength="6" required style="width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;">
+                </div>
+                <div class="form-group">
+                    <label style="font-size:0.9rem;color:var(--texto-gris);margin-bottom:6px;display:block;">Confirmar contraseña</label>
+                    <input type="password" id="confirmPassword" placeholder="Repite la contraseña" minlength="6" required style="width:100%;padding:12px 16px;border:2px solid #e0e0e0;border-radius:10px;font-size:0.9rem;">
+                </div>
+                <div style="display:flex;gap:10px;margin-top:10px;">
+                    <button type="button" class="btn btn-sm" style="background:#e0e0e0;color:#333;flex:1;" onclick="closeChangePwdModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-salmon" style="flex:1;"><i class="fa-solid fa-floppy-disk"></i> Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
