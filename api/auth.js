@@ -1,85 +1,69 @@
-// api/auth.js — Toda la autenticación en una función
-// Rutas por query param ?action=...
-// GET  ?action=me
-// POST ?action=login
-// POST ?action=register
-// POST ?action=logout
-// GET  ?action=google        → redirige a Google
-// GET  ?action=callback      → callback de Google OAuth
-// GET  ?action=profile
-// PATCH ?action=profile
-// POST ?action=reset-request
-// POST ?action=reset-password
-
-import { sql, nanoid } from './_db.js';
+import { query, nanoid } from './_db.js';
 import { signToken, verifyToken, setSessionCookie, clearSessionCookie, getSessionUser } from './_auth.js';
 import { parse as parseCookies, serialize } from 'cookie';
 import bcrypt from 'bcryptjs';
 
-function json(res, data, status) { res.status(status || 200).json(data); }
-function err(res, msg, status)   { res.status(status || 400).json({ error: msg }); }
+function ok(res, data, status) { res.status(status||200).json(data); }
+function err(res, msg, status) { res.status(status||400).json({ error: msg }); }
 
 export default async function handler(req, res) {
   const action = req.query.action;
   const method = req.method;
 
-  // ── GET /api/auth?action=me ──────────────────────────────
+  // GET me
   if (action === 'me') {
     const user = await getSessionUser(req);
     if (!user) return err(res, 'No autenticado', 401);
-    return json(res, { user });
+    return ok(res, { user });
   }
 
-  // ── POST /api/auth?action=login ──────────────────────────
+  // POST login
   if (action === 'login' && method === 'POST') {
     const { email, password } = req.body || {};
     if (!email || !password) return err(res, 'Faltan campos');
-    const db = sql();
-    const rows = await db`SELECT * FROM users WHERE email = ${email.toLowerCase().trim()} LIMIT 1`;
+    const rows = await query('SELECT * FROM users WHERE email=$1 LIMIT 1', [email.toLowerCase().trim()]);
     const user = rows[0];
     if (!user || !user.password_hash) return err(res, 'Correo o contraseña incorrectos');
     const valid = await bcrypt.compare(password, user.password_hash);
     if (!valid) return err(res, 'Correo o contraseña incorrectos');
-    const token = await signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
+    const token = await signToken({ id:user.id, email:user.email, name:user.name, role:user.role });
     setSessionCookie(res, token);
-    return json(res, { user: { id: user.id, email: user.email, name: user.name, role: user.role } });
+    return ok(res, { user: { id:user.id, email:user.email, name:user.name, role:user.role } });
   }
 
-  // ── POST /api/auth?action=register ──────────────────────
+  // POST register
   if (action === 'register' && method === 'POST') {
     const { email, password, name } = req.body || {};
     if (!email || !password || !name) return err(res, 'Faltan campos');
     if (password.length < 6) return err(res, 'Contraseña mínimo 6 caracteres');
-    const db = sql();
-    const existing = await db`SELECT id FROM users WHERE email = ${email.toLowerCase().trim()} LIMIT 1`;
+    const existing = await query('SELECT id FROM users WHERE email=$1 LIMIT 1', [email.toLowerCase().trim()]);
     if (existing.length > 0) return err(res, 'Este correo ya está registrado');
     const hash = await bcrypt.hash(password, 10);
     const id = nanoid();
-    await db`INSERT INTO users (id, email, name, password_hash, role)
-             VALUES (${id}, ${email.toLowerCase().trim()}, ${name.trim()}, ${hash}, 'user')`;
-    const token = await signToken({ id, email: email.toLowerCase().trim(), name: name.trim(), role: 'user' });
+    await query('INSERT INTO users (id,email,name,password_hash,role) VALUES ($1,$2,$3,$4,$5)',
+      [id, email.toLowerCase().trim(), name.trim(), hash, 'user']);
+    const token = await signToken({ id, email:email.toLowerCase().trim(), name:name.trim(), role:'user' });
     setSessionCookie(res, token);
-    return json(res, { user: { id, email, name, role: 'user' } }, 201);
+    return ok(res, { user: { id, email, name, role:'user' } }, 201);
   }
 
-  // ── POST /api/auth?action=logout ─────────────────────────
+  // POST logout
   if (action === 'logout') {
     clearSessionCookie(res);
-    return json(res, { ok: true });
+    return ok(res, { ok: true });
   }
 
-  // ── GET /api/auth?action=google ──────────────────────────
+  // GET google — inicia OAuth
   if (action === 'google') {
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const appUrl   = process.env.APP_URL || 'https://forsync.vercel.app';
+    const appUrl = process.env.APP_URL || 'https://forsync.vercel.app';
     const redirect = encodeURIComponent(`${appUrl}/api/auth?action=callback`);
-    const state    = Math.random().toString(36).slice(2);
+    const state = Math.random().toString(36).slice(2);
     res.setHeader('Set-Cookie', `oauth_state=${state}; HttpOnly; Secure; SameSite=Lax; Max-Age=600; Path=/`);
-    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirect}&response_type=code&scope=openid%20email%20profile&state=${state}&access_type=offline&prompt=select_account`;
+    const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${process.env.GOOGLE_CLIENT_ID}&redirect_uri=${redirect}&response_type=code&scope=openid%20email%20profile&state=${state}&access_type=offline&prompt=select_account`;
     return res.redirect(302, url);
   }
 
-  // ── GET /api/auth?action=callback ────────────────────────
+  // GET callback — Google OAuth callback
   if (action === 'callback') {
     const { code, state, error } = req.query;
     const appUrl = process.env.APP_URL || 'https://forsync.vercel.app';
@@ -89,116 +73,105 @@ export default async function handler(req, res) {
     try {
       const redirect = `${appUrl}/api/auth?action=callback`;
       const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ code, client_id: process.env.GOOGLE_CLIENT_ID, client_secret: process.env.GOOGLE_CLIENT_SECRET, redirect_uri: redirect, grant_type: 'authorization_code' })
+        method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({ code, client_id:process.env.GOOGLE_CLIENT_ID, client_secret:process.env.GOOGLE_CLIENT_SECRET, redirect_uri:redirect, grant_type:'authorization_code' })
       });
       const tokens = await tokenRes.json();
       if (!tokens.access_token) throw new Error('No access token');
-      const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers: { Authorization: `Bearer ${tokens.access_token}` } });
+      const userRes = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', { headers:{ Authorization:`Bearer ${tokens.access_token}` } });
       const gUser = await userRes.json();
-      if (!gUser.email) throw new Error('No email from Google');
-      const db = sql();
-      let rows = await db`SELECT * FROM users WHERE email = ${gUser.email} LIMIT 1`;
+      if (!gUser.email) throw new Error('No email');
+      let rows = await query('SELECT * FROM users WHERE email=$1 LIMIT 1', [gUser.email]);
       let user = rows[0];
       if (!user) {
         const id = nanoid();
-        await db`INSERT INTO users (id, email, name, provider, role) VALUES (${id}, ${gUser.email}, ${gUser.name || gUser.email}, 'google', 'user')`;
-        rows = await db`SELECT * FROM users WHERE id = ${id} LIMIT 1`;
+        await query('INSERT INTO users (id,email,name,provider,role) VALUES ($1,$2,$3,$4,$5)',
+          [id, gUser.email, gUser.name||gUser.email, 'google', 'user']);
+        rows = await query('SELECT * FROM users WHERE id=$1 LIMIT 1', [id]);
         user = rows[0];
       }
-      const token = await signToken({ id: user.id, email: user.email, name: user.name, role: user.role });
-      // Setear sesión y limpiar oauth_state en una sola respuesta
+      const token = await signToken({ id:user.id, email:user.email, name:user.name, role:user.role });
       res.setHeader('Set-Cookie', [
-        serialize('fs_token', token, { httpOnly: true, secure: true, sameSite: 'lax', maxAge: 60*60*24*30, path: '/' }),
+        serialize('fs_token', token, { httpOnly:true, secure:true, sameSite:'lax', maxAge:60*60*24*30, path:'/' }),
         'oauth_state=; HttpOnly; Secure; SameSite=Lax; Max-Age=0; Path=/'
       ]);
       return res.redirect(302, user.role === 'admin' ? `${appUrl}/admin` : `${appUrl}/`);
     } catch(e) {
       console.error('OAuth error:', e);
-      return res.redirect(302, `${(process.env.APP_URL||'https://forsync.vercel.app')}/login?error=oauth_failed`);
+      return res.redirect(302, `${process.env.APP_URL||'https://forsync.vercel.app'}/login?error=oauth_failed`);
     }
   }
 
-  // ── GET|PATCH /api/auth?action=profile ───────────────────
+  // GET|PATCH profile
   if (action === 'profile') {
     const session = await getSessionUser(req);
     if (!session) return err(res, 'No autenticado', 401);
-    const db = sql();
     if (method === 'GET') {
-      const rows = await db`SELECT id, email, name, phone, city, role FROM users WHERE id = ${session.id} LIMIT 1`;
-      return json(res, { user: rows[0] });
+      const rows = await query('SELECT id,email,name,phone,city,role FROM users WHERE id=$1 LIMIT 1', [session.id]);
+      return ok(res, { user: rows[0] });
     }
     if (method === 'PATCH') {
       const { name, phone, city, password, new_password } = req.body || {};
       if (new_password) {
         if (!password) return err(res, 'Se requiere la contraseña actual');
-        const rows = await db`SELECT password_hash FROM users WHERE id = ${session.id} LIMIT 1`;
+        const rows = await query('SELECT password_hash FROM users WHERE id=$1 LIMIT 1', [session.id]);
         if (!rows[0]?.password_hash) return err(res, 'Cuenta Google no puede cambiar contraseña aquí');
         const valid = await bcrypt.compare(password, rows[0].password_hash);
         if (!valid) return err(res, 'Contraseña actual incorrecta');
         const hash = await bcrypt.hash(new_password, 10);
-        await db`UPDATE users SET password_hash = ${hash} WHERE id = ${session.id}`;
+        await query('UPDATE users SET password_hash=$2 WHERE id=$1', [session.id, hash]);
       }
-      await db`UPDATE users SET
-        name  = COALESCE(${name  || null}, name),
-        phone = COALESCE(${phone || null}, phone),
-        city  = COALESCE(${city  || null}, city)
-        WHERE id = ${session.id}`;
-      const updated = await db`SELECT id, email, name, role FROM users WHERE id = ${session.id} LIMIT 1`;
+      await query('UPDATE users SET name=COALESCE($2,name), phone=COALESCE($3,phone), city=COALESCE($4,city) WHERE id=$1',
+        [session.id, name||null, phone||null, city||null]);
+      const updated = await query('SELECT id,email,name,role FROM users WHERE id=$1 LIMIT 1', [session.id]);
       const u = updated[0];
-      const newToken = await signToken({ id: u.id, email: u.email, name: u.name, role: u.role });
+      const newToken = await signToken({ id:u.id, email:u.email, name:u.name, role:u.role });
       setSessionCookie(res, newToken);
-      return json(res, { ok: true, user: u });
+      return ok(res, { ok:true, user:u });
     }
   }
 
-  // ── POST /api/auth?action=reset-request ─────────────────
+  // POST reset-request
   if (action === 'reset-request' && method === 'POST') {
     const { email } = req.body || {};
     if (!email) return err(res, 'Falta el correo');
-    const db = sql();
-    const rows = await db`SELECT id, email FROM users WHERE email = ${email.toLowerCase()} LIMIT 1`;
-    if (!rows.length) return json(res, { ok: true }); // no revelar si existe
-    const token = await signToken({ id: rows[0].id, email: rows[0].email, type: 'reset' });
-    const appUrl = process.env.APP_URL || 'https://forsync.vercel.app';
-    const link = `${appUrl}/reset-password?token=${token}`;
-    console.log('[RESET LINK]', link); // TODO: enviar por email real
-    return json(res, { ok: true, _dev_link: link });
+    const rows = await query('SELECT id,email FROM users WHERE email=$1 LIMIT 1', [email.toLowerCase()]);
+    if (!rows.length) return ok(res, { ok:true });
+    const token = await signToken({ id:rows[0].id, email:rows[0].email, type:'reset' });
+    const link = `${process.env.APP_URL||'https://forsync.vercel.app'}/reset-password?token=${token}`;
+    console.log('[RESET LINK]', link);
+    return ok(res, { ok:true, _dev_link: link });
   }
 
-  // ── POST /api/auth?action=reset-password ─────────────────
+  // POST reset-password
   if (action === 'reset-password' && method === 'POST') {
     const { token, password } = req.body || {};
-    if (!token || !password) return err(res, 'Faltan campos');
-    if (password.length < 6) return err(res, 'Mínimo 6 caracteres');
+    if (!token || !password || password.length < 6) return err(res, 'Datos inválidos');
     const payload = await verifyToken(token);
     if (!payload || payload.type !== 'reset') return err(res, 'Token inválido o expirado');
     const hash = await bcrypt.hash(password, 10);
-    await sql()`UPDATE users SET password_hash = ${hash} WHERE id = ${payload.id}`;
-    return json(res, { ok: true });
+    await query('UPDATE users SET password_hash=$2 WHERE id=$1', [payload.id, hash]);
+    return ok(res, { ok:true });
   }
 
-  // ── POST /api/auth?action=delete-account ─────────────────
+  // POST delete-account
   if (action === 'delete-account' && method === 'POST') {
     const session = await getSessionUser(req);
     if (!session) return err(res, 'No autenticado', 401);
     const { password } = req.body || {};
     if (!password) return err(res, 'Falta la contraseña');
-    const db = sql();
-    const rows = await db`SELECT password_hash FROM users WHERE id = ${session.id} LIMIT 1`;
-    const user = rows[0];
-    if (!user) return err(res, 'Usuario no encontrado', 404);
-    if (user.password_hash) {
-      const valid = await bcrypt.compare(password, user.password_hash);
+    const rows = await query('SELECT password_hash FROM users WHERE id=$1 LIMIT 1', [session.id]);
+    if (!rows[0]) return err(res, 'Usuario no encontrado', 404);
+    if (rows[0].password_hash) {
+      const valid = await bcrypt.compare(password, rows[0].password_hash);
       if (!valid) return err(res, 'Contraseña incorrecta');
     }
-    await db`DELETE FROM orders  WHERE user_id = ${session.id}`;
-    await db`DELETE FROM quotes  WHERE user_id = ${session.id}`;
-    await db`DELETE FROM reviews WHERE user_id = ${session.id}`;
-    await db`DELETE FROM users   WHERE id      = ${session.id}`;
+    await query('DELETE FROM orders  WHERE user_id=$1', [session.id]);
+    await query('DELETE FROM quotes  WHERE user_id=$1', [session.id]);
+    await query('DELETE FROM reviews WHERE user_id=$1', [session.id]);
+    await query('DELETE FROM users   WHERE id=$1',      [session.id]);
     clearSessionCookie(res);
-    return json(res, { ok: true });
+    return ok(res, { ok:true });
   }
 
   err(res, 'Acción no encontrada', 404);
