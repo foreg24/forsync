@@ -30,7 +30,8 @@
 
 /* ── RESET ── */
 *{margin:0;padding:0;box-sizing:border-box;}
-html{scroll-behavior:auto;} /* Lenis handles smooth scroll */
+html{scroll-behavior:auto;
+cursor: none;} /* Lenis handles smooth scroll */
 body{
   font-family:'Inter',sans-serif;background:var(--bg);color:var(--texto);
   padding-top:80px;line-height:1.6;overflow-x:hidden;
