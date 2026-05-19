@@ -47,7 +47,8 @@ export default async function handler(req, res) {
     const { id } = req.body || {};
     if (!id) return res.status(400).json({ error: 'Falta el id' });
     await query('DELETE FROM products WHERE id = $1', [id]);
-    return res.json({ ok: true });
+    // Return the deleted id so clients can purge it from their carts
+    return res.json({ ok: true, deleted_id: id });
   }
   res.status(405).end();
 }

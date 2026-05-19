@@ -218,6 +218,14 @@ async function loadData() {
   App.products   = (pr.products   && pr.products.length)   ? pr.products   : App.localProducts;
   App.reviews    = (rv.reviews    && rv.reviews.length)    ? rv.reviews    : App.localReviews;
   App.promotions = (pm.promotions && pm.promotions.length) ? pm.promotions : [];
+
+  // Purge deleted products from cart
+  if (App.products.length && App.cart.length) {
+    var ids = App.products.map(function(p){ return p.id; });
+    var before = App.cart.length;
+    App.cart = App.cart.filter(function(i){ return ids.indexOf(i.id) !== -1; });
+    if (App.cart.length !== before) { saveCart(); updateCartUI(); }
+  }
 }
 
 // ================= CART =================
