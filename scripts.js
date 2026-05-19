@@ -666,7 +666,7 @@ function loadPayPalSDK(cb) {
   if (old) old.remove();
   window.paypal = undefined;
   var s = document.createElement('script');
-  s.src = 'https://www.paypal.com/sdk/js?client-id=' + encodeURIComponent(CONFIG.PAYPAL_CLIENT_ID)
+  s.src = 'https://www.paypal.com/sdk/js?client-id=' + CONFIG.PAYPAL_CLIENT_ID
         + '&currency=USD&intent=capture&components=buttons&disable-funding=credit,card';
   s.onload = function() { App.paypalLoaded = true; cb(); };
   s.onerror = function() {
