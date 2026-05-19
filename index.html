@@ -7,6 +7,23 @@
     <meta name="description" content="ForSync - Servicios profesionales de desarrollo de software. Landing pages, tiendas virtuales, sistemas de reservas, inventario y más.">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- SVG Liquid Glass Filter (hidden, referenced by CSS filter:url()) -->
+    <svg style="position:absolute;width:0;height:0;overflow:hidden;" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="liquidGlass" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.015 0.015" numOctaves="2" seed="2" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+          <feGaussianBlur in="displaced" stdDeviation="0.5" result="blurred"/>
+          <feComposite in="blurred" in2="SourceGraphic" operator="over"/>
+        </filter>
+        <filter id="glowFilter">
+          <feGaussianBlur stdDeviation="8" result="blur"/>
+          <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+      </defs>
+    </svg>
+
 </head>
 <body>
     <!-- PAGE LOADER -->
