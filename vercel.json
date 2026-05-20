@@ -10,6 +10,7 @@
     { "src": "/admin-styles.css",   "dest": "/admin-styles.css" },
     { "src": "/scripts.js",         "dest": "/scripts.js" },
     { "src": "/admin-scripts.js",   "dest": "/admin-scripts.js" },
+    { "src": "/assets-svg.js",      "dest": "/assets-svg.js" },
     { "src": "/login",              "dest": "/login.html" },
     { "src": "/admin",              "dest": "/admin.html" },
     { "src": "/reset-password",     "dest": "/reset-password.html" },

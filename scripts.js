@@ -229,9 +229,19 @@ async function loadData() {
 }
 
 // ================= CART =================
-function initCart() {
+async function initCart() {
   App.cart = JSON.parse(localStorage.getItem('forsync_cart') || '[]');
   updateCartUI();
+  // Background validation: purge any products no longer active
+  if (App.cart.length) {
+    var fresh = await api('products');
+    if (fresh && fresh.products && fresh.products.length) {
+      var ids = fresh.products.map(function(p) { return p.id; });
+      var before = App.cart.length;
+      App.cart = App.cart.filter(function(i) { return ids.indexOf(i.id) !== -1; });
+      if (App.cart.length !== before) { saveCart(); updateCartUI(); }
+    }
+  }
 }
 
 function saveCart() {
@@ -299,13 +309,28 @@ function updateCartUI() {
   cartBody.innerHTML = html;
 }
 
-function proceedToCheckout() {
+async function proceedToCheckout() {
   if (!App.cart.length) { showToast('Tu carrito está vacío', 'error'); return; }
   if (!App.user) {
     showToast('Debes iniciar sesión para realizar una compra', 'error');
     toggleCart();
     setTimeout(function() { window.location.href = 'login.html'; }, 1200);
     return;
+  }
+  // Always re-fetch active products before checkout to purge deleted items
+  var fresh = await api('products');
+  if (fresh && fresh.products) {
+    var activeIds = fresh.products.map(function(p) { return p.id; });
+    var before = App.cart.length;
+    App.cart = App.cart.filter(function(item) { return activeIds.indexOf(item.id) !== -1; });
+    if (App.cart.length !== before) {
+      saveCart(); updateCartUI();
+      if (!App.cart.length) {
+        showToast('Algunos servicios ya no están disponibles y fueron removidos del carrito.', 'error');
+        return;
+      }
+      showToast('Algunos servicios ya no están disponibles y fueron removidos.', 'info');
+    }
   }
   toggleCart();
   showSection('checkout');
@@ -447,12 +472,15 @@ function renderFeatured() {
 }
 
 function buildFeaturedCard(p) {
+  var svg = (typeof getServiceImage === 'function') ? getServiceImage(p) : '';
   var priceHtml = p.promo_price
     ? '<span class="price-promo">' + formatPrice(p.promo_price) + '</span> <span class="price-original">' + formatPrice(p.price) + '</span>'
     : '<span class="from">Desde</span> ' + formatPrice(p.price);
   return '<div class="featured-card" onclick="showServiceDetail(\'' + p.slug + '\')">'
-    + (p.promo_price ? '<span class="promo-badge" style="position:absolute;top:10px;right:10px;">PROMO</span>' : '')
-    + '<div class="featured-img" style="position:relative;"><i class="' + (p.image||'fa-solid fa-code') + '"></i></div>'
+    + (p.promo_price ? '<div class="promo-badge" style="position:absolute;top:10px;right:10px;z-index:2;">PROMO</div>' : '')
+    + '<div class="featured-img">'
+    + (svg ? svg : '<i class="' + (p.image || 'fa-solid fa-code') + '"></i>')
+    + '</div>'
     + '<div class="featured-info"><h4>' + p.name + '</h4>'
     + '<p class="price">' + priceHtml + '</p>'
     + '<button class="add-to-cart" onclick="event.stopPropagation();addToCart(\'' + p.id + '\')"><i class="fa-solid fa-cart-plus"></i> Agregar</button>'
@@ -484,7 +512,7 @@ function renderServiceDetail() {
     : '<span class="from">Desde</span> <strong style="font-size:2rem;">' + formatPrice(p.price) + '</strong>';
 
   container.innerHTML = '<div class="service-detail">'
-    + '<div class="detail-icon"><i class="' + (p.image||'fa-solid fa-code') + '"></i></div>'
+    + '<div class="detail-icon" style="overflow:hidden;">' + (typeof getServiceImage === 'function' ? getServiceImage(p) : '<i class="' + (p.image||'fa-solid fa-code') + '"></i>') + '</div>'
     + '<div class="detail-info">'
     + '<span class="detail-category">' + catName + '</span>'
     + '<h1>' + p.name + '</h1>'

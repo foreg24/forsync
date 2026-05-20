@@ -27,8 +27,8 @@
 </head>
 <body>
     <!-- CUSTOM CURSOR -->
+    <div id="cursor-outer"></div>
     <div id="cursor-dot"></div>
-    <div id="cursor-ring"></div>
 
     <!-- PAGE LOADER -->
     <div class="page-loader" id="pageLoader">
@@ -678,6 +678,7 @@
         </div>
     </div>
 
+    <script src="assets-svg.js"></script>
     <script src="scripts.js"></script>
 
     <!-- Three.js for 3D hero objects -->
@@ -697,25 +698,26 @@
       'use strict';
 
       /* ── CUSTOM CURSOR ── */
-      var dot  = document.getElementById('cursor-dot');
-      var ring = document.getElementById('cursor-ring');
-      var mx = 0, my = 0, rx = 0, ry = 0;
-      if (dot && ring && window.matchMedia('(hover:hover)').matches) {
+      var outer = document.getElementById('cursor-outer');
+      var dot   = document.getElementById('cursor-dot');
+      var mx = 0, my = 0, ox = 0, oy = 0;
+      if (outer && dot && window.matchMedia('(hover:hover)').matches) {
         document.addEventListener('mousemove', function(e) {
           mx = e.clientX; my = e.clientY;
-          dot.style.left  = mx + 'px';
-          dot.style.top   = my + 'px';
+          dot.style.left = mx + 'px';
+          dot.style.top  = my + 'px';
         });
-        (function animRing() {
-          rx += (mx - rx) * 0.12;
-          ry += (my - ry) * 0.12;
-          ring.style.left = rx + 'px';
-          ring.style.top  = ry + 'px';
-          requestAnimationFrame(animRing);
+        (function animOuter() {
+          ox += (mx - ox) * 0.1;
+          oy += (my - oy) * 0.1;
+          outer.style.left = ox + 'px';
+          outer.style.top  = oy + 'px';
+          requestAnimationFrame(animOuter);
         })();
-        document.querySelectorAll('a,button,.service-card,.featured-card,.btn').forEach(function(el) {
-          el.addEventListener('mouseenter', function() { ring.classList.add('hovering'); });
-          el.addEventListener('mouseleave', function() { ring.classList.remove('hovering'); });
+        var hoverEls = document.querySelectorAll('a,button,.service-card,.featured-card,.about-card,.review-card,.btn,.chip,.cart-bubble,.faq-question');
+        hoverEls.forEach(function(el) {
+          el.addEventListener('mouseenter', function() { outer.classList.add('hovering'); dot.classList.add('hovering'); });
+          el.addEventListener('mouseleave', function() { outer.classList.remove('hovering'); dot.classList.remove('hovering'); });
         });
       }
 
@@ -934,6 +936,20 @@
           { opacity: 1, x: 0, duration: 1.0, ease: 'power3.out',
             scrollTrigger: { trigger: '#carouselFeatured', start: 'top 88%', toggleActions: 'play none none none' } }
         );
+
+        /* SVG images inside featured cards — subtle parallax depth */
+        gsap.utils.toArray('.featured-img svg').forEach(function(svg) {
+          gsap.to(svg, {
+            yPercent: -8,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: svg.closest('.featured-card') || svg,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 1.5
+            }
+          });
+        });
 
         /* FAQ items */
         gsap.utils.toArray('.faq-item').forEach(function(item, i) {
